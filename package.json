@@ -1,0 +1,26 @@
+{
+  "name": "lawsync-license-api",
+  "version": "1.0.0",
+  "description": "api for verify a license for LawSync desktop application",
+  "license": "ISC",
+  "author": "Mohamed Mattar",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mongoose": "^9.1.5",
+    "node-machine-id": "^1.1.12"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.2.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
