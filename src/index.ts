@@ -1,11 +1,11 @@
 import express, { type Request, type Response } from "express";
 import mongoose from "mongoose";
 const app = express();
-import License from "./License";
-import ValidateLicense from "./ValidateLicense";
-import APIKeyValidation from "./APIKeyValidator";
-import ActivateLicense from "./ActivateLicense";
-import StartTrial from "./BeginTrial";
+import License from "./License.js";
+import ValidateLicense from "./ValidateLicense.js";
+import APIKeyValidation from "./APIKeyValidator.js";
+import ActivateLicense from "./ActivateLicense.js";
+import StartTrial from "./BeginTrial.js";
 import dotenv from "dotenv";
 dotenv.config();
 
