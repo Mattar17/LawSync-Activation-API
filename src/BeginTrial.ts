@@ -1,7 +1,8 @@
 import { type Request, type Response } from "express";
 import Trial from "./Trial";
 import signLicense from "./helpers/signLicense";
-export default async function StartTrial(req: Request, res: Response) {
+
+export default async function BeginTrial(req: Request, res: Response) {
   try {
     const { machineId } = req.body;
     const trialExists = await Trial.findOne({ machineId });

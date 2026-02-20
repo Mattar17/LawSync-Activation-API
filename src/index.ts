@@ -6,8 +6,7 @@ import License from "./License";
 import ValidateLicense from "./ValidateLicense";
 import APIKeyValidation from "./APIKeyValidator";
 import ActivateLicense from "./ActivateLicense";
-import StartTrial from "./startTrial";
-
+import StartTrial from "./BeginTrial";
 mongoose
   .connect(process.env.MONGO_URI!)
   .then(() => console.log("mongodDB Connected✅"))
