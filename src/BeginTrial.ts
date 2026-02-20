@@ -1,6 +1,6 @@
 import { type Request, type Response } from "express";
-import Trial from "./Trial";
-import signLicense from "./helpers/signLicense";
+import Trial from "./Trial.js";
+import signLicense from "./helpers/signLicense.js";
 
 export default async function BeginTrial(req: Request, res: Response) {
   try {

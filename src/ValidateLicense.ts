@@ -1,5 +1,5 @@
-import License from "./License";
-import signLicense from "./helpers/signLicense";
+import License from "./License.js";
+import signLicense from "./helpers/signLicense.js";
 import { type Request, type Response } from "express";
 
 export default async function ValidateLicense(

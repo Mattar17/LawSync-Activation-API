@@ -1,6 +1,6 @@
 import { type Request, type Response } from "express";
-import License from "./License";
-import signLicense from "./helpers/signLicense";
+import License from "./License.js";
+import signLicense from "./helpers/signLicense.js";
 
 export default async function ActivateLicense(req: Request, res: Response) {
   try {
