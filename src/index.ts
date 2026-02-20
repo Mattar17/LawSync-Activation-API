@@ -26,13 +26,9 @@ app.get("/", async (req: Request, res: Response) => {
   return res.json(licenses);
 });
 
-if (process.env.NODE_ENV === "production") {
-  app.use(APIKeyValidation);
-}
-
-app.post("/api/licenses/validate", ValidateLicense);
-app.post("/api/licenses/activate", ActivateLicense);
-app.post("/api/licenses/trial/start", StartTrial);
+app.post("/api/licenses/validate", APIKeyValidation, ValidateLicense);
+app.post("/api/licenses/activate", APIKeyValidation, ActivateLicense);
+app.post("/api/licenses/trial/start", APIKeyValidation, StartTrial);
 
 app.listen(8000, () => {
   console.log("typescript + express api is running on :8000");
