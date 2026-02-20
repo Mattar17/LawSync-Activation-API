@@ -6,19 +6,21 @@ export default async function StartTrial(req: Request, res: Response) {
     const { machineId } = req.body;
     const trialExists = await Trial.findOne({ machineId });
     if (trialExists) {
-      return res
-        .status(400)
-        .json({ success: "false", message: "Trial already exists" });
+      return res.status(206).json({
+        success: true,
+        message: "Trial already exists",
+        data: trialExists,
+      });
     }
     let newTrial = new Trial({ machineId });
     await newTrial.save();
     const signedTrial = signLicense(newTrial);
     return res.status(201).json({
-      success: "true",
+      success: true,
       message: "Trial started successfully",
       data: signedTrial,
     });
   } catch (err) {
-    return res.status(500).json({ success: "false", message: "server error" });
+    return res.status(500).json({ success: false, message: "server error" });
   }
 }
