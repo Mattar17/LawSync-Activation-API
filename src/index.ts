@@ -1,12 +1,14 @@
 import express, { type Request, type Response } from "express";
 import mongoose from "mongoose";
-import "dotenv/config";
 const app = express();
 import License from "./License";
 import ValidateLicense from "./ValidateLicense";
 import APIKeyValidation from "./APIKeyValidator";
 import ActivateLicense from "./ActivateLicense";
 import StartTrial from "./BeginTrial";
+import dotenv from "dotenv";
+dotenv.config();
+
 mongoose
   .connect(process.env.MONGO_URI!)
   .then(() => console.log("mongodDB Connected✅"))
