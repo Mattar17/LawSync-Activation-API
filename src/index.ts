@@ -6,7 +6,7 @@ import License from "./License";
 import ValidateLicense from "./ValidateLicense";
 import APIKeyValidation from "./APIKeyValidator";
 import ActivateLicense from "./ActivateLicense";
-import startTrial from "./startTrial";
+import StartTrial from "./startTrial";
 
 mongoose
   .connect(process.env.MONGO_URI!)
@@ -31,7 +31,7 @@ if (process.env.NODE_ENV === "production") {
 
 app.post("/api/licenses/validate", ValidateLicense);
 app.post("/api/licenses/activate", ActivateLicense);
-app.post("/api/licenses/trial/start", startTrial);
+app.post("/api/licenses/trial/start", StartTrial);
 
 app.listen(8000, () => {
   console.log("typescript + express api is running on :8000");
