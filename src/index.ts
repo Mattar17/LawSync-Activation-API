@@ -20,10 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", async (req: Request, res: Response) => {
-  const licenses = await License.find({});
-  if (!licenses) return res.json("Not found");
-
-  return res.json(licenses);
+  res.json("Welcome to the License Management API 💙");
 });
 
 app.post("/api/licenses/validate", APIKeyValidation, ValidateLicense);

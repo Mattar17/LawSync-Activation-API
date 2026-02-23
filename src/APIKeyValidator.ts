@@ -5,7 +5,8 @@ export default async function apiKeyValidation(
   res: Response,
   next: NextFunction,
 ) {
-  const apiKey = req.get("apiKey");
+  const apiKey = req.get("x-api-key");
+  console.log("API Key Validation called with key:", apiKey);
 
   if (!apiKey) return res.status(403).json("api key must be provided");
 

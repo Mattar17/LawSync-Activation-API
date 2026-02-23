@@ -3,6 +3,7 @@ import Trial from "./Trial.js";
 import signLicense from "./helpers/signLicense.js";
 
 export default async function BeginTrial(req: Request, res: Response) {
+  console.log("BeginTrial called");
   try {
     const { machineId } = req.body;
     const trialExists = await Trial.findOne({ machineId });
