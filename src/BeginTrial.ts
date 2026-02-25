@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express";
 import Trial from "./Trial.js";
+import signLicense from "./helpers/signLicense.js";
 
 export default async function BeginTrial(req: Request, res: Response) {
   try {
@@ -16,7 +17,7 @@ export default async function BeginTrial(req: Request, res: Response) {
     return res.status(201).json({
       success: true,
       message: "Trial started successfully",
-      data: trial,
+      data: signLicense(trial!),
     });
   } catch (err) {
     return res.status(500).json({ success: false, message: "server error" });

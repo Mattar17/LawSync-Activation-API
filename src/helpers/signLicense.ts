@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import { readFileSync } from "fs";
 
 export default function signLicense(payload: object) {
   const privateKey = process.env.LICENSE_SECRET!;
