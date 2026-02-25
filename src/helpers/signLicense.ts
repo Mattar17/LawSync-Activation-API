@@ -2,10 +2,7 @@ import crypto from "crypto";
 import { readFileSync } from "fs";
 
 export default function signLicense(payload: object) {
-  const privateKey = readFileSync(
-    new URL("../../private.pem", import.meta.url),
-    "utf8",
-  );
+  const privateKey = process.env.LICENSE_SECRET!.replace(/\\n/g, "\n");
   const data = JSON.stringify(payload);
 
   const sign = crypto.createSign("SHA256");
