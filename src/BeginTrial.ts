@@ -11,6 +11,9 @@ export default async function BeginTrial(req: Request, res: Response) {
       await newTrial.save();
     }
 
+    console.log("Trial started for machineId:", machineId);
+    console.log("Trial details:", trial);
+
     return res.status(201).json({
       success: true,
       message: "Trial started successfully",
