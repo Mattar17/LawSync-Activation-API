@@ -13,6 +13,7 @@ export default async function BeginTrial(req: Request, res: Response) {
 
     console.log("Trial started for machineId:", machineId);
     console.log("Trial details:", trial);
+    console.log("License signed for trial:", signLicense(trial!));
 
     return res.status(201).json({
       success: true,
