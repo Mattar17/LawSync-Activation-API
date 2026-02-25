@@ -1,10 +1,10 @@
 import crypto from "crypto";
 
 export default function signLicense(payload: object) {
-  const privateKey = process.env.LICENSE_SECRET!;
+  const privateKey = process.env.LICENSE_SECRET!.replace(/\\n/g, "\n");
   const data = JSON.stringify(payload);
 
-  const sign = crypto.createSign("SHA256");
+  const sign = crypto.createSign("RSA-SHA256");
   sign.update(data);
   sign.end();
 
