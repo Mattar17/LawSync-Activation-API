@@ -25,7 +25,7 @@ export default async function ValidateLicense(
 
     return res
       .status(200)
-      .json({ success: "true", message: "valid license", data: signedLicense });
+      .json({ success: true, message: "valid license", data: signedLicense });
   } catch (err) {
     return res.json(`${err} : server error`);
   }
