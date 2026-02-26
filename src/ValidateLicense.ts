@@ -21,6 +21,8 @@ export default async function ValidateLicense(
         .status(403)
         .json({ success: false, message: "max devices limit reached" });
 
+    console.log("License found:", licenseDoc);
+
     const signedLicense = signLicense(licenseDoc);
 
     return res
