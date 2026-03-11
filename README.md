@@ -102,6 +102,13 @@ Install dependencies:
 npm install
 ```
 
+Generate a private key used for signing licenses:
+
+openssl genrsa -out private.pem 2048
+
+Place the generated private.pem file in the root directory of the project.
+```
+
 Run development server:
 
 ```
