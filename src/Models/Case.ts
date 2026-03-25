@@ -1,0 +1,100 @@
+import { Schema, model } from "mongoose";
+
+interface ICase {
+  case_number: string;
+  case_year: string;
+  client_name: string;
+  client_opponent_name: string;
+  client_role: "مدعي" | "مدعى عليه";
+  client_opponent_role: "مدعي" | "مدعى عليه";
+  client_national_id: string;
+  client_opponent_national_id: string;
+  latest_court_session_date?: string;
+  next_court_session_date?: string;
+  case_status?: string;
+  case_notes?: string;
+}
+
+const caseSchema = new Schema<ICase>(
+  {
+    case_number: {
+      type: String,
+      required: [true, "رقم القضية مطلوب"],
+      unique: true,
+    },
+
+    case_year: {
+      type: String,
+      required: [true, "يجب ادخال هذا الحقل"],
+    },
+
+    client_name: {
+      type: String,
+      required: [true, "اسم الموكل مطلوب"],
+      trim: true,
+    },
+
+    client_opponent_name: {
+      type: String,
+      required: [true, "اسم الخصم مطلوب"],
+      trim: true,
+    },
+
+    client_role: {
+      type: String,
+      enum: {
+        values: ["مدعي", "مدعى عليه", "مستأنف", "مستأنف ضده"],
+        message: "صفة الموكل غير صحيحة",
+      },
+      required: [true, "صفة الموكل مطلوبة"],
+    },
+
+    client_opponent_role: {
+      type: String,
+      enum: {
+        values: ["مدعي", "مدعى عليه", "مستأنف", "مستأنف ضده"],
+        message: "صفة الخصم غير صحيحة",
+      },
+      required: [true, "صفة الخصم مطلوبة"],
+    },
+
+    client_national_id: {
+      type: String,
+      required: [true, "الرقم القومي مطلوب"],
+      match: [/^[0-9]{14}$/, "الرقم القومي يجب أن يتكون من 14 رقمًا"],
+      validate: {
+        validator: (v?: string) => v?.length === 14,
+        message: "الرقم القومي يجب أن يكون 14 رقمًا",
+      },
+    },
+    client_opponent_national_id: {
+      type: String,
+      required: [true, "الرقم القومي للخصم مطلوب"],
+      match: [/^[0-9]{14}$/, "الرقم القومي للخصم يجب أن يتكون من 14 رقمًا"],
+      validate: {
+        validator: (v?: string) => v?.length === 14,
+        message: "الرقم القومي للخصم يجب أن يكون 14 رقمًا",
+      },
+    },
+    latest_court_session_date: {
+      type: String,
+    },
+    next_court_session_date: {
+      type: String,
+    },
+
+    case_status: {
+      type: String,
+      default: "قضية جديدة",
+    },
+    case_notes: {
+      type: String,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+const CaseModel = model<ICase>("Case", caseSchema);
+export default CaseModel;

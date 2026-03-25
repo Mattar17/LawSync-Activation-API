@@ -15,7 +15,7 @@ interface ILicense {
   isRevoked: boolean;
 }
 
-const UsedDeviceSchema = new Schema(
+const UsedDeviceSchema = new Schema<IUsedDevices>(
   {
     machineId: { type: String, required: true },
     activatedAt: { type: Date, required: true },
@@ -40,7 +40,7 @@ const licenseSchema = new Schema<ILicense>({
     default: [],
   },
 
-  expiresAt: Date,
+  expiresAt: { type: Date },
 
   isRevoked: { type: Boolean, default: false },
 });

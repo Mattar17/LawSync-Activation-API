@@ -1,6 +1,13 @@
 import { Schema, model } from "mongoose";
 
-const trialSchema = new Schema({
+interface ITrial {
+  machineId: string;
+  type: string;
+  startedAt: Date;
+  expiresAt: Date;
+}
+
+const trialSchema = new Schema<ITrial>({
   machineId: { type: String, required: true },
   type: {
     type: String,
@@ -14,4 +21,4 @@ const trialSchema = new Schema({
   },
 });
 
-export default model("Trial", trialSchema);
+export default model<ITrial>("Trial", trialSchema);
