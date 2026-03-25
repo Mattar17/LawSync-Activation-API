@@ -1,4 +1,4 @@
-import AnalyticsModel from "../Models/Analytics";
+import AnalyticsModel from "../Models/Analytics.js";
 import { type Response, type Request } from "express";
 
 async function numberOfDownloads(
