@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 
 interface ICase {
+  lawyer_token: string;
   case_number: string;
   case_year: string;
   client_name: string;
@@ -12,11 +13,14 @@ interface ICase {
   latest_court_session_date?: string;
   next_court_session_date?: string;
   case_status?: string;
-  case_notes?: string;
 }
 
 const caseSchema = new Schema<ICase>(
   {
+    lawyer_token: {
+      type: String,
+      unique: true,
+    },
     case_number: {
       type: String,
       required: [true, "رقم القضية مطلوب"],
@@ -86,9 +90,6 @@ const caseSchema = new Schema<ICase>(
     case_status: {
       type: String,
       default: "قضية جديدة",
-    },
-    case_notes: {
-      type: String,
     },
   },
   {
