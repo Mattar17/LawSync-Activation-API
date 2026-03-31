@@ -13,9 +13,11 @@ import * as LaweryController from "./Controllers/Lawyer.controller.js";
 import { getLawyerCases } from "./Controllers/getCases.js";
 import { Login } from "./Controllers/Login.js";
 import SyncCases from "./Controllers/SyncCases.js";
+import { requestLogger } from "./middlewares/requestLogger.js";
 
 const router = express.Router();
 router.use(APIKeyValidation);
+router.use(requestLogger);
 
 //Activation
 router.post("/api/licenses/validate", ValidateLicense);
