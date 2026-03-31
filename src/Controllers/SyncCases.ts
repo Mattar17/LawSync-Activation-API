@@ -1,6 +1,6 @@
 import { type Request, type Response } from "express";
-import CaseModel from "../Models/Case";
-import LawyerModel from "../Models/Lawyer";
+import CaseModel from "../Models/Case.js";
+import LawyerModel from "../Models/Lawyer.js";
 import logger from "../utils/logger.js";
 
 const SyncCases = async (req: Request, res: Response) => {

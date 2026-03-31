@@ -1,7 +1,7 @@
 import License from "../Models/License.js";
 import signLicense from "../Services/signLicense.js";
 import { type Request, type Response } from "express";
-import logger from "../utils/logger.js"; // Winston logger
+import logger from "../utils/logger.js";
 
 export default async function ValidateLicense(
   req: Request,
