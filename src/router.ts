@@ -12,6 +12,7 @@ import {
 import * as LaweryController from "./Controllers/Lawyer.controller.js";
 import { getLawyerCases } from "./Controllers/getCases.js";
 import { Login } from "./Controllers/Login.js";
+import SyncCases from "./Controllers/SyncCases.js";
 
 const router = express.Router();
 router.use(APIKeyValidation);
@@ -26,7 +27,12 @@ router.get("/api/analytics/downloads", numberOfDownloads);
 router.patch("/api/analytics/downloads", increamentDownloads);
 
 //Lawyers
-router.get("/api/lawyers/", LaweryController.getAllLawyers);
+router.get(
+  "/api/lawyers/",
+  verifyToken,
+  AdminOnly,
+  LaweryController.getAllLawyers,
+);
 router.get("/api/lawyers/:token", LaweryController.getLawyerByToken);
 router.post(
   "/api/lawyers/",
@@ -53,8 +59,9 @@ router.post(
   LaweryController.updatePortalPassword,
 );
 
-//Lawyers
+//Cases
 router.get("/api/cases/:token", getLawyerCases);
+router.post("/api/sync", SyncCases);
 
 //Login
 router.post("/api/login", Login);
