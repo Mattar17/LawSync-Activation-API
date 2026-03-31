@@ -71,7 +71,7 @@ This prevents unauthorized activation and ensures that each license is tied to a
 Full endpoint documentation and request examples are available here:
 
 **Postman Documentation:**
-`<test>`
+`https://documenter.getpostman.com/view/38403808/2sBXinHWS3`
 
 ---
 
