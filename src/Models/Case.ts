@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 
-interface ICase {
+export interface ICase {
   lawyer_token: string;
   case_number: string;
   case_year: string;
