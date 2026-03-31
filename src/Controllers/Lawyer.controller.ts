@@ -1,5 +1,5 @@
 import { type Request, type Response } from "express";
-import LawyerModel from "../Models/Lawyer";
+import LawyerModel from "../Models/Lawyer.js";
 import { generateLawyerId } from "../utils/generateLawyerId.js";
 import bcrypt from "bcrypt";
 import logger from "../utils/logger.js";
