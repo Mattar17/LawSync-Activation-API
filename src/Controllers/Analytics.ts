@@ -9,12 +9,8 @@ async function numberOfDownloads(req: Request, res: Response) {
     const analytics = await AnalyticsModel.findOneAndUpdate(
       { key: "global" },
       { $inc: { numberOfDownloads: 0 } },
-      { upsert: true, new: true },
+      { upsert: true },
     );
-
-    logger.info("Fetched downloads", {
-      numberOfDownloads: analytics?.numberOfDownloads,
-    });
 
     return res.status(200).json(analytics?.numberOfDownloads);
   } catch (err: any) {
