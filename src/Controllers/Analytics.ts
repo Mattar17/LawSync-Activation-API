@@ -1,15 +1,15 @@
 import AnalyticsModel from "../Models/Analytics.js";
 import logger from "../utils/logger.js";
-import type {Request,Response} from 'express'
+import type { Request, Response } from "express";
 
-async function numberOfDownloads(req:Request, res:Response) {
+async function numberOfDownloads(req: Request, res: Response) {
   try {
     logger.info("Fetching number of downloads");
 
     const analytics = await AnalyticsModel.findOneAndUpdate(
       { key: "global" },
       { $inc: { numberOfDownloads: 0 } },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
 
     logger.info("Fetched downloads", {
@@ -17,7 +17,7 @@ async function numberOfDownloads(req:Request, res:Response) {
     });
 
     return res.status(200).json(analytics?.numberOfDownloads);
-  } catch (err) {
+  } catch (err: any) {
     logger.error("Error fetching downloads", {
       message: err.message,
       stack: err.stack,
@@ -27,19 +27,19 @@ async function numberOfDownloads(req:Request, res:Response) {
   }
 }
 
-async function increamentDownloads(req:Request, res:Response) {
+async function increamentDownloads(req: Request, res: Response) {
   try {
     logger.info("Incrementing downloads");
 
     await AnalyticsModel.updateOne(
       { key: "global" },
-      { $inc: { numberOfDownloads: 1 } }
+      { $inc: { numberOfDownloads: 1 } },
     );
 
     logger.info("Downloads incremented successfully");
 
     return res.status(200).json({ success: true });
-  } catch (err) {
+  } catch (err: any) {
     logger.error("Error incrementing downloads", {
       message: err.message,
       stack: err.stack,
