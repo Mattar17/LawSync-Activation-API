@@ -1,7 +1,8 @@
 import AnalyticsModel from "../Models/Analytics.js";
 import logger from "../utils/logger.js";
+import type {Request,Response} from 'express'
 
-async function numberOfDownloads(req, res) {
+async function numberOfDownloads(req:Request, res:Response) {
   try {
     logger.info("Fetching number of downloads");
 
@@ -26,7 +27,7 @@ async function numberOfDownloads(req, res) {
   }
 }
 
-async function increamentDownloads(req, res) {
+async function increamentDownloads(req:Request, res:Response) {
   try {
     logger.info("Incrementing downloads");
 
