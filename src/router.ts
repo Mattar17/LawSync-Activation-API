@@ -2,7 +2,7 @@ import express from "express";
 import APIKeyValidation from "./middlewares/APIKeyValidator.js";
 import ValidateLicense from "./Controllers/ValidateLicense.js";
 import ActivateLicense from "./Controllers/ActivateLicense.js";
-import StartTrial from "./Controllers/BeginTrial.js";
+import StartTrial from "./Controllers/StartTrial.js";
 import AdminOnly from "./middlewares/adminOnly.js";
 import verifyToken from "./middlewares/verifyToken.js";
 import {
