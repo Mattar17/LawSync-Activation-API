@@ -7,16 +7,29 @@ export default async function ActivateLicense(req: Request, res: Response) {
   try {
     const { key, machineId } = req.body;
 
+    if (!key || !machineId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Key and machineId are required" });
+    }
+
     logger.info("ActivateLicense request received", {
       key: key?.slice(0, 5) + "***",
       machineId,
     });
 
-    const { data: license } = await supabase
+    const { data: license, error: fetchError } = await supabase
       .from("licenses")
       .select("*,used_devices(*)")
       .eq("key", key)
       .single();
+
+    if (fetchError) {
+      logger.error("Supabase fetch error", { error: fetchError });
+      return res
+        .status(500)
+        .json({ success: false, message: "Database error" });
+    }
 
     if (!license) {
       logger.warn("License not found", {
@@ -38,8 +51,8 @@ export default async function ActivateLicense(req: Request, res: Response) {
         activated_at: new Date(),
         last_seen_at: new Date(),
       });
-    console.log(insertError);
-    if (insertError) throw new Error("server error");
+    if (insertError)
+      throw new Error(`Inserting Error:: ${insertError.message}`);
     logger.info("License activated", {
       licenseId: license.id,
       machineId,
@@ -66,6 +79,6 @@ export default async function ActivateLicense(req: Request, res: Response) {
       stack: err.stack,
     });
 
-    return res.status(500).json("server error");
+    return res.status(500).json({ success: false, message: "server error" });
   }
 }

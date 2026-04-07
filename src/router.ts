@@ -14,16 +14,24 @@ import { getLawyerCases } from "./Controllers/getCases.js";
 import { Login } from "./Controllers/Login.js";
 import SyncCases from "./Controllers/SyncCases.js";
 import { requestLogger } from "./middlewares/requestLogger.js";
-import supabase from "./Services/supabaseClient.js";
+
+import { rateLimit } from "express-rate-limit";
+
+const limiter = rateLimit({
+  windowMs: 20 * 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-8",
+  message: { success: false, message: "too many requests" },
+});
 
 const router = express.Router();
 router.use(APIKeyValidation);
 router.use(requestLogger);
 
 //Activation
-router.post("/api/licenses/validate", ValidateLicense);
-router.post("/api/licenses/activate", ActivateLicense);
-router.post("/api/licenses/trial/start", StartTrial);
+router.post("/api/licenses/validate", limiter, ValidateLicense);
+router.post("/api/licenses/activate", limiter, ActivateLicense);
+router.post("/api/licenses/trial/start", limiter, StartTrial);
 
 //Analytics
 router.get("/api/analytics/downloads", numberOfDownloads);
