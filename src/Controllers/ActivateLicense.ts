@@ -1,7 +1,7 @@
 import { type Request, type Response } from "express";
-import License from "../Models/License.js";
 import signLicense from "../Services/signLicense.js";
 import logger from "../utils/logger.js";
+import supabase from "../Services/supabaseClient.js";
 
 export default async function ActivateLicense(req: Request, res: Response) {
   try {
@@ -12,7 +12,11 @@ export default async function ActivateLicense(req: Request, res: Response) {
       machineId,
     });
 
-    const license = await License.findOne({ key });
+    const { data: license } = await supabase
+      .from("licenses")
+      .select("*,used_devices(*)")
+      .eq("key", key)
+      .single();
 
     if (!license) {
       logger.warn("License not found", {
@@ -21,21 +25,36 @@ export default async function ActivateLicense(req: Request, res: Response) {
       return res.status(404).json("License doesn't exist");
     }
 
-    license.usedDevices.push({
-      machineId,
-      activatedAt: new Date(),
-      lastSeenAt: new Date(),
-    });
+    if (license.used_devices.length >= license.max_devices)
+      return res
+        .status(403)
+        .json({ success: false, message: "Devices limit reached" });
 
-    await license.save();
-
+    const { data: insertedRow, error: insertError } = await supabase
+      .from("used_devices")
+      .insert({
+        license_id: license.id,
+        machine_id: machineId,
+        activated_at: new Date(),
+        last_seen_at: new Date(),
+      });
+    console.log(insertError);
+    if (insertError) throw new Error("server error");
     logger.info("License activated", {
-      licenseId: license._id,
+      licenseId: license.id,
       machineId,
-      totalDevices: license.usedDevices.length,
+      totalDevices: license.used_devices.length,
     });
 
-    const signedLicense = signLicense(license);
+    const { data: updatedLicense, error: updatedError } = await supabase
+      .from("licenses")
+      .select("*,used_devices(*)")
+      .eq("id", license.id)
+      .single();
+
+    if (updatedError) throw updatedError;
+
+    const signedLicense = signLicense(updatedLicense);
 
     return res.status(201).json({
       success: true,

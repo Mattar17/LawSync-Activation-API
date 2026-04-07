@@ -1,7 +1,7 @@
-import License from "../Models/License.js";
 import signLicense from "../Services/signLicense.js";
 import { type Request, type Response } from "express";
 import logger from "../utils/logger.js";
+import supabase from "../Services/supabaseClient.js";
 
 export default async function ValidateLicense(
   req: Request,
@@ -17,16 +17,19 @@ export default async function ValidateLicense(
         .json({ success: false, message: "Key is required" });
     }
 
-    const licenseDoc = await License.findOne({ key });
+    const { data, error } = await supabase
+      .from("licenses")
+      .select("*,used_devices(*)")
+      .eq("key", key);
 
-    if (!licenseDoc) {
+    if (!data || !data.length) {
       logger.warn(`License key not found: ${key}`);
       return res
         .status(404)
         .json({ success: false, message: "Key isn't valid" });
     }
-
-    if (licenseDoc.usedDevices?.length >= licenseDoc.maxDevices) {
+    const license = data[0];
+    if (license.used_devices!.length >= license.maxDevices) {
       logger.warn(`Max devices limit reached for key: ${key}`);
       return res
         .status(403)
@@ -34,14 +37,10 @@ export default async function ValidateLicense(
     }
 
     logger.info(
-      `License validated for key: ${key}, usedDevices: ${licenseDoc.usedDevices?.length || 0}`,
+      `License validated for key: ${key}, usedDevices: ${license.used_devices?.length || 0}`,
     );
 
-    const signedLicense = signLicense(licenseDoc);
-
-    return res
-      .status(200)
-      .json({ success: true, message: "Valid license", data: signedLicense });
+    return res.status(200).json({ success: true, message: "Valid license" });
   } catch (err) {
     logger.error(`ValidateLicense error: ${err}`);
     return res.status(500).json({ success: false, message: "Server error" });

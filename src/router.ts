@@ -14,6 +14,7 @@ import { getLawyerCases } from "./Controllers/getCases.js";
 import { Login } from "./Controllers/Login.js";
 import SyncCases from "./Controllers/SyncCases.js";
 import { requestLogger } from "./middlewares/requestLogger.js";
+import supabase from "./Services/supabaseClient.js";
 
 const router = express.Router();
 router.use(APIKeyValidation);

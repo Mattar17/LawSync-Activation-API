@@ -1,9 +1,11 @@
 import crypto from "crypto";
 
 export default function signLicense(payload: object) {
-  const privateKey = process.env.LICENSE_SECRET!.replace(/\\n/g, "\n");
+  const rawKey = process.env.LICENSE_SECRET!;
+  const privateKey = rawKey.includes("\\n")
+    ? rawKey.replace(/\\n/g, "\n")
+    : rawKey;
   const data = JSON.stringify(payload);
-  console.log("Data to be signed:", data);
   const sign = crypto.createSign("RSA-SHA256");
   sign.update(data);
   sign.end();
