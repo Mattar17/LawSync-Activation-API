@@ -21,6 +21,7 @@ const limiter = rateLimit({
   windowMs: 20 * 60 * 1000,
   limit: 100,
   standardHeaders: "draft-8",
+  legacyHeaders: false,
   message: { success: false, message: "too many requests" },
 });
 
