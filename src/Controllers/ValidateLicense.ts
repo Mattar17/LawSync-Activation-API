@@ -29,7 +29,8 @@ export default async function ValidateLicense(
         .json({ success: false, message: "Key isn't valid" });
     }
     const license = data[0];
-    if (license.used_devices!.length >= license.maxDevices) {
+    console.log(license.used_devices.length);
+    if (license.used_devices!.length >= license.max_devices) {
       logger.warn(`Max devices limit reached for key: ${key}`);
       return res
         .status(403)
