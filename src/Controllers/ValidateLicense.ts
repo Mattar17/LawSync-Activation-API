@@ -40,7 +40,9 @@ export default async function ValidateLicense(
       `License validated for key: ${key}, usedDevices: ${license.used_devices?.length || 0}`,
     );
 
-    return res.status(200).json({ success: true, message: "Valid license" });
+    return res
+      .status(200)
+      .json({ success: true, message: "Valid license", data: license });
   } catch (err) {
     logger.error(`ValidateLicense error: ${err}`);
     return res.status(500).json({ success: false, message: "Server error" });
