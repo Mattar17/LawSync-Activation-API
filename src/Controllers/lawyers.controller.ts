@@ -8,11 +8,12 @@ interface AuthRequest extends Request {
   token?: {
     admin?: boolean;
     lawyer_token?: string;
+    lawyer_id?: string;
   };
 }
 
 // 🔹 Helper: get lawyer by id
-const getLawyerById = async (id: string) => {
+export const getLawyerByIdHelper = async (id: string) => {
   const { data, error } = await supabase
     .from("lawyers")
     .select("*")
@@ -20,11 +21,44 @@ const getLawyerById = async (id: string) => {
     .single();
 
   if (error) throw error;
+  console.log(data);
   return data;
 };
 
+export const getLawyerById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    logger.info(`Fetching lawyer with id: ${id}`);
+
+    if (!id) {
+      logger.warn("No ID provided");
+      return res.status(400).json({
+        success: false,
+        message: "Lawyer ID is required",
+      });
+    }
+
+    const data = await getLawyerByIdHelper(id as string);
+
+    logger.info(`Lawyer fetched successfully: ${id}`);
+
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (err: any) {
+    logger.error(`Unexpected error: ${err.message}`);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 // 🔹 GET ALL LAWYERS
-export const getAllLawyers = async (req: AuthRequest, res: Response) => {
+export const getAllLawyersAdmin = async (req: AuthRequest, res: Response) => {
   try {
     logger.info("Fetching all lawyers", {
       user: req.token?.lawyer_token,
@@ -38,6 +72,32 @@ export const getAllLawyers = async (req: AuthRequest, res: Response) => {
       success: true,
       count: data.length,
       data,
+    });
+  } catch (err: any) {
+    logger.error("Error fetching lawyers", { message: err.message });
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+export const getAllLawyersPublic = async (req: AuthRequest, res: Response) => {
+  try {
+    logger.info("Fetching all lawyers", {
+      user: req.token?.lawyer_token,
+    });
+
+    const { data, error } = await supabase.from("lawyers").select("*");
+
+    if (error) throw error;
+
+    const LawyersDTO = data.map(({ token, ...rest }) => rest);
+
+    return res.status(200).json({
+      success: true,
+      count: data.length,
+      data: LawyersDTO,
     });
   } catch (err: any) {
     logger.error("Error fetching lawyers", { message: err.message });
@@ -137,7 +197,7 @@ export const createLawyer = async (req: AuthRequest, res: Response) => {
 // 🔹 UPDATE LAWYER
 export const updateLawyer = async (req: AuthRequest, res: Response) => {
   try {
-    const lawyer = await getLawyerById(req.params.id as string);
+    const lawyer = await getLawyerByIdHelper(req.params.id as string);
 
     if (!lawyer) {
       return res.status(404).json({
@@ -145,8 +205,8 @@ export const updateLawyer = async (req: AuthRequest, res: Response) => {
         message: "Lawyer not found",
       });
     }
-
-    if (req.token?.lawyer_token !== lawyer.token) {
+    console.log(req.token, lawyer.token);
+    if (req.token?.lawyer_id !== lawyer.id) {
       logger.warn("Unauthorized update attempt", {
         user: req.token?.lawyer_token,
       });
@@ -219,7 +279,7 @@ export const updateProfilePassword = async (
   try {
     const { currentPassword, newPassword } = req.body;
 
-    const lawyer = await getLawyerById(req.params.id as string);
+    const lawyer = await getLawyerByIdHelper(req.params.id as string);
 
     if (!lawyer) {
       return res.status(404).json({
@@ -234,7 +294,6 @@ export const updateProfilePassword = async (
         message: "Access denied",
       });
     }
-
     const isMatch = await bcrypt.compare(
       currentPassword,
       lawyer.profile_password,
@@ -243,7 +302,7 @@ export const updateProfilePassword = async (
     if (!isMatch) {
       return res.status(400).json({
         success: false,
-        message: "Current password is incorrect",
+        message: "كلمة المرور الحالية غير صحيحة",
       });
     }
 
@@ -258,10 +317,10 @@ export const updateProfilePassword = async (
 
     return res.status(200).json({
       success: true,
-      message: "Profile password updated successfully",
+      message: "تم تغيير كلمة المرور بنجاج",
     });
   } catch (err: any) {
-    logger.error("Error updating profile password", {
+    logger.error("حدث خطأ!! حاول مرةً أخرى", {
       message: err.message,
     });
 
@@ -277,7 +336,7 @@ export const updatePortalPassword = async (req: AuthRequest, res: Response) => {
   try {
     const { profilePassword, newPortalPassword } = req.body;
 
-    const lawyer = await getLawyerById(req.params.id as string);
+    const lawyer = await getLawyerByIdHelper(req.params.id as string);
 
     if (!lawyer) {
       return res.status(404).json({
@@ -301,7 +360,7 @@ export const updatePortalPassword = async (req: AuthRequest, res: Response) => {
     if (!isMatch) {
       return res.status(400).json({
         success: false,
-        message: "Profile password is incorrect",
+        message: "كلمة المرور الخاصة غير صحيحة",
       });
     }
 
@@ -316,7 +375,7 @@ export const updatePortalPassword = async (req: AuthRequest, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      message: "Portal password updated successfully",
+      message: "تم تغيير كلمة مرور بوابتك بنجاج",
     });
   } catch (err: any) {
     logger.error("Error updating portal password", {
@@ -328,4 +387,40 @@ export const updatePortalPassword = async (req: AuthRequest, res: Response) => {
       message: err.message,
     });
   }
+};
+
+export const setProfilePicture = async (req: Request, res: Response) => {
+  const { file } = req;
+  const { id } = req.params;
+
+  if (!file)
+    return res
+      .status(403)
+      .json({ success: false, message: "يعتذر قراءة الملف" });
+
+  const { data: result, error: uploadError } = await supabase.storage
+    .from("profile_pictures")
+    .upload(`public/${file.originalname}`, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true,
+    });
+  if (uploadError) return res.json(`${uploadError.message} upload error`);
+
+  const { data: avatar_url } = supabase.storage
+    .from("profile_pictures")
+    .getPublicUrl(`public/${file.originalname}`);
+  console.log(avatar_url.publicUrl);
+
+  const { data: updateResult, error: updateError } = await supabase
+    .from("lawyers")
+    .update({ avatar_url: avatar_url.publicUrl })
+    .eq("id", id);
+
+  if (updateError) res.json(`${updateError}-> error while updating ${id}`);
+
+  return res.status(200).json({
+    success: true,
+    data: result,
+    message: "تم تعديل الصورة الشخصية بنجاح",
+  });
 };

@@ -7,12 +7,13 @@ import AdminOnly from "./middlewares/adminOnly.js";
 import verifyToken from "./middlewares/verifyToken.js";
 import { handleDownloads } from "./Controllers/analytics.controller.js";
 import * as LawyerController from "./Controllers/lawyers.controller.js";
-import { getLawyerCases } from "./Controllers/getCases.js";
 import { Login } from "./Controllers/Login.js";
-import SyncCases from "./Controllers/SyncCases.js";
 import { requestLogger } from "./middlewares/requestLogger.js";
+import { getLawyerCases, syncCases } from "./Controllers/case.controller.js";
+import { UploadImage } from "./Services/UploadImage.js";
 
 import { rateLimit } from "express-rate-limit";
+import AccessPortal from "./Controllers/AccessPortal.js";
 
 const limiter = rateLimit({
   windowMs: 20 * 60 * 1000,
@@ -35,8 +36,14 @@ router.post("/api/licenses/trial/start", limiter, StartTrial);
 router.post("/api/analytics/downloads", handleDownloads);
 
 //Lawyers
-router.get("/api/lawyers/", LawyerController.getAllLawyers);
+router.get(
+  "/api/lawyers/admin",
+  verifyToken,
+  LawyerController.getAllLawyersAdmin,
+);
+router.get("/api/lawyers/", LawyerController.getAllLawyersPublic);
 router.get("/api/lawyers/:token", LawyerController.getLawyerByToken);
+router.get("/api/lawyers/id/:id", LawyerController.getLawyerById);
 router.post(
   "/api/lawyers/",
   verifyToken,
@@ -62,11 +69,18 @@ router.post(
   LawyerController.updatePortalPassword,
 );
 
+router.post(
+  "/api/lawyers/avatar/:id",
+  UploadImage.single("file"),
+  LawyerController.setProfilePicture,
+);
+
 //Cases
-router.get("/api/cases/:token", getLawyerCases);
-router.post("/api/sync", SyncCases);
+router.get("/api/cases/:id", getLawyerCases);
+router.post("/api/sync", syncCases);
 
 //Login
 router.post("/api/login", Login);
+router.post("/api/portal-access", AccessPortal);
 
 export default router;
