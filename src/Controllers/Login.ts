@@ -1,7 +1,6 @@
 import { type Response, type Request } from "express";
 import bcrypt from "bcrypt";
 import generateToken from "../Services/generateToken.js";
-import LawyerModel from "../Models/Lawyer.js";
 import logger from "../utils/logger.js";
 import supabase from "../Services/supabaseClient.js";
 
