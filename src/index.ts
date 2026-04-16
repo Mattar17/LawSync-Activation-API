@@ -28,6 +28,13 @@ app.get("/", async (req: Request, res: Response) => {
   res.json("Welcome to the License Management API 💙");
 });
 
+app.post("/reset-app-password", async (req: Request, res: Response) => {
+  const { password } = req.body;
+  return res
+    .status(200)
+    .json({ success: password === process.env.CONFIRM_RESET_PASSWORD });
+});
+
 app.use("/", router);
 
 app.listen(8000, () => {
