@@ -1,27 +1,21 @@
-# LawSync Backend API
+# LawSync Activation API
 
-Backend API powering the **LawSync ecosystem**, including the SaaS platform and desktop application.
+Backend API responsible for handling **license validation and activation** for the LawSync desktop application.
+This service verifies license keys, activates licenses for specific machines, and issues **cryptographically signed licenses** used by the desktop client.
 
-🌐 **Main SaaS Website:** https://lawsync-saas.vercel.app/
-
-This API is responsible for handling **lawyers, cases, authentication, search functionality**, and **desktop license activation**, all in a unified system designed to scale.
+Although the API was initially built only for the **LawSync desktop activation system**, it is designed to be extended to support the **LawSync SaaS platform** in the future.
 
 ---
 
 # Features
 
-* Lawyer management (CRUD operations)
-* Case management system
-* Advanced case search functionality
-* Authentication system (Admin & Lawyers)
-* Secure password hashing
-* Uploading and storing lawyer avatars
-* Desktop license activation & validation
-* Free trial generation for desktop app
+* License key validation
+* Machine-based license activation
+* Free trial generation
 * Cryptographically signed licenses
-* Sync cases from desktop application to SaaS platform using lawyer token
+* MongoDB license storage
 * Built with TypeScript and Express
-* Integrated with Supabase
+* Designed to integrate with the LawSync desktop application
 
 ---
 
@@ -30,112 +24,64 @@ This API is responsible for handling **lawyers, cases, authentication, search fu
 * **Node.js**
 * **Express**
 * **TypeScript**
-* **Supabase** (Database, Storage, Auth support)
+* **MongoDB**
 
 ---
 
 # Project Purpose
 
-This API serves as the **core backend** for both:
+The API acts as a **license authority server** for the LawSync desktop software.
 
-### 1. LawSync SaaS Platform
+The desktop application communicates with this API to:
 
-Handles:
+* Validate license keys
+* Activate licenses for a specific machine
+* Request trial licenses
+* Receive a signed license used locally by the application
 
-* Lawyer accounts
-* Case management
-* Authentication (Admin & Lawyers)
-* Searching and filtering cases
-* File and avatar uploads
-
-### 2. LawSync Desktop Application
-
-Handles:
-
-* License validation
-* Machine-based activation
-* Trial generation
-* Signed license issuance
-* Syncing locally stored cases to the SaaS platform
+This prevents unauthorized activation and ensures that each license is tied to a specific machine.
 
 ---
 
-# Core Functionalities
-
-## Authentication
-
-* Role-based authentication system:
-
-  * Admin
-  * Lawyers
-* Passwords are securely hashed before storage
-* Lawyer token is used to authorize desktop-to-server communication
-
----
-
-## Lawyers & Cases
-
-* Manage lawyers and their data
-* Create, update, and track legal cases
-* Search cases efficiently using filters and queries
-
----
-
-## Case Sync (Desktop → SaaS)
-
-* Desktop app authenticates using the **lawyer token**
-* Sends locally stored cases to the API
-* API validates ownership and merges/saves cases in the database
-* Ensures consistency between desktop and web platforms
-
----
-
-## File Uploads
-
-* Upload and store lawyer avatars using Supabase storage
-
----
-
-## Desktop Activation System
+# License Flow
 
 ### Paid Activation Flow
 
 1. User enters a license key in the desktop application
-2. Desktop app sends the key to the API
-3. The application provides its `machineId`
-4. The API binds the license to that machine
+2. Desktop app validates the license key with the API
+3. The application sends its `machineId`
+4. The API attaches the machine ID to the license
 5. The license is signed using the server's **private key**
-6. A signed license is returned to the desktop application
+6. The signed license is returned to the desktop application
 
 ---
 
 ### Trial Flow
 
-1. Desktop application requests a trial license using `machineId`
-2. API checks if a trial already exists
-3. If not, a trial license is created
+1. Desktop application requests a trial license using its `machineId`
+2. The API checks whether a trial already exists for that machine
+3. If not, a new trial license is created
 4. The license is signed
-5. Signed license is returned
+5. The signed license is returned to the desktop application
 
 ---
 
 # API Documentation
 
-Full endpoint documentation:
+Full endpoint documentation and request examples are available here:
 
-**Postman Docs:**
-https://documenter.getpostman.com/view/38403808/2sBXinHWS3
+**Postman Documentation:**
+`https://documenter.getpostman.com/view/38403808/2sBXinHWS3`
 
 ---
 
 # Environment Variables
 
-Create a `.env` file:
+Create a `.env` file in the project root:
 
 ```
 PORT=5000
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_anon_or_service_key
+MONGO_URI=your_mongodb_connection_string
 PRIVATE_KEY=your_private_key_for_license_signing
 ```
 
@@ -146,8 +92,8 @@ PRIVATE_KEY=your_private_key_for_license_signing
 Clone the repository:
 
 ```
-git clone https://github.com/yourusername/LawSync-Backend.git
-cd LawSync-Backend
+git clone https://github.com/yourusername/LawSync-Activation-API.git
+cd LawSync-Activation-API
 ```
 
 Install dependencies:
@@ -156,25 +102,21 @@ Install dependencies:
 npm install
 ```
 
-Generate a private key for license signing:
-
+Generate a private key used for signing licenses:
 ```
 openssl genrsa -out private.pem 2048
 ```
 
-Place `private.pem` in the root directory.
+Place the generated private.pem file in the root directory of the project.
 
----
 
-# Running the Project
-
-Development:
+Run development server:
 
 ```
 npm run dev
 ```
 
-Production:
+Build for production:
 
 ```
 npm run build
@@ -185,24 +127,25 @@ npm start
 
 # Security
 
-* Passwords are **securely hashed**
 * Licenses are **cryptographically signed**
-* Desktop app verifies licenses using a **public key**
+* Desktop application verifies the signature using the **public key**
+* Prevents tampering with license files
 * Machine binding prevents license sharing
-* Secure handling of authentication and user roles
 
 ---
 
 # Future Plans
 
-* Subscription and billing system
-* Role-based permissions expansion
-* Notifications system
-* Realtime updates (cases & activities)
-* Full SaaS scaling with microservices architecture
+This API will be extended to support the **LawSync SaaS platform**, including:
+
+* User authentication
+* Lawyer accounts
+* Case management
+* Online client portals
+* Subscription management
 
 ---
 
 # License
 
-Part of the **LawSync ecosystem**.
+This project is part of the **LawSync ecosystem**.
