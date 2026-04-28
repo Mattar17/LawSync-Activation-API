@@ -33,7 +33,8 @@ var raw = JSON.stringify({
   },
   special_reference: `order_${Date.now()}`,
   expiration: 3600,
-  notification_url: "https://webhook.site/api/webhook",
+  notification_url:
+    "https://law-sync-activation-api.vercel.app/api/payment/webhook",
   redirection_url: "https://www.google.com/",
 });
 

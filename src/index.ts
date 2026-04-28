@@ -6,6 +6,7 @@ dotenv.config();
 import router from "./router.js";
 import cors from "cors";
 import "dotenv/config";
+import { handlePaymentWebhook } from "./Controllers/Payment.controller.js";
 
 app.use(
   cors({
@@ -34,6 +35,8 @@ app.post("/reset-app-password", async (req: Request, res: Response) => {
     .status(200)
     .json({ success: password === process.env.CONFIRM_RESET_PASSWORD });
 });
+
+app.post("/api/payment/webhook", handlePaymentWebhook);
 
 app.use("/", router);
 

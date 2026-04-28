@@ -32,7 +32,6 @@ router.use(APIKeyValidation);
 router.use(requestLogger);
 //Payment
 router.post("/api/payment", PaymentIntention);
-router.post("/api/payment/webhook", handlePaymentWebhook);
 //Activation
 router.post("/api/licenses/validate", limiter, ValidateLicense);
 router.post("/api/licenses/activate", limiter, ActivateLicense);
