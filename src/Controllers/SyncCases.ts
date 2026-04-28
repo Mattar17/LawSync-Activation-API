@@ -46,6 +46,7 @@ const SyncCases = async (req: Request, res: Response) => {
           $set: {
             ...c,
             lawyer_token: token,
+            case_mongo_id: c._id,
           },
         },
         upsert: true,

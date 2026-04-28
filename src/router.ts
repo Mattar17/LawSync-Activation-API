@@ -11,6 +11,10 @@ import { Login } from "./Controllers/Login.js";
 import { requestLogger } from "./middlewares/requestLogger.js";
 import { getLawyerCases, syncCases } from "./Controllers/case.controller.js";
 import { UploadImage } from "./Services/UploadImage.js";
+import {
+  handlePaymentWebhook,
+  PaymentIntention,
+} from "./Controllers/Payment.controller.js";
 
 import { rateLimit } from "express-rate-limit";
 import AccessPortal from "./Controllers/AccessPortal.js";
@@ -26,7 +30,9 @@ const limiter = rateLimit({
 const router = express.Router();
 router.use(APIKeyValidation);
 router.use(requestLogger);
-
+//Payment
+router.post("/api/payment", PaymentIntention);
+router.post("/api/payment/webhook", handlePaymentWebhook);
 //Activation
 router.post("/api/licenses/validate", limiter, ValidateLicense);
 router.post("/api/licenses/activate", limiter, ActivateLicense);
