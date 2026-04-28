@@ -1,10 +1,7 @@
 var myHeaders = new Headers();
 myHeaders.append("Authorization", `Token ${process.env.PAYMOB_SECRET}`);
 myHeaders.append("Content-Type", "application/json");
-myHeaders.append(
-  "api_key",
-  "ZXlKaGJHY2lPaUpJVXpVeE1pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmpiR0Z6Y3lJNklrMWxjbU5vWVc1MElpd2ljSEp2Wm1sc1pWOXdheUk2TVRFMU5Ea3lOeXdpYm1GdFpTSTZJbWx1YVhScFlXd2lmUS5Bc1dINzFWcnRQLUtBSWU2LVFadVhhY2pzaU1DYXZQT0R2cUhmTGJRZW02SnRSSkN5WEVUcFRFYnBLWmVRdmNMUFdTQ0xqcmFsWWFKZjB4WnJvV3dSdw==",
-);
+myHeaders.append("api_key", process.env.PAYMOB_API_KEY!);
 
 var raw = JSON.stringify({
   amount: 2000,
