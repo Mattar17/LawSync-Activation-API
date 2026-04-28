@@ -48,6 +48,7 @@ export const syncCases = async (req: Request, res: Response) => {
     const payload = cases.map((c: any) => ({
       ...c,
       lawyer_id: lawyer.id,
+      case_mongo_id: c._id,
     }));
 
     // 4. UPSERT (based on unique constraint)
