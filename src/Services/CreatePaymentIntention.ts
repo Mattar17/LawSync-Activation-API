@@ -35,7 +35,7 @@ var raw = {
   expiration: 3600,
   notification_url:
     "https://law-sync-activation-api.vercel.app/api/payment/webhook",
-  redirection_url: "http://localhost:5173/payment_webhook",
+  redirection_url: "https://lawsync-saas.vercel.app/payment_webhook",
 };
 
 export default async function CreateIntention(userId: string) {
