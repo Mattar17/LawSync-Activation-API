@@ -3,7 +3,9 @@ import CreateIntention from "../Services/CreatePaymentIntention.js";
 
 export async function PaymentIntention(req: Request, res: Response) {
   try {
-    const response = await CreateIntention();
+    const { id } = req.params;
+    console.log(id);
+    const response = await CreateIntention(id as string);
     console.log(response);
     const clientSecret = response.client_secret;
     return res.json({
@@ -18,5 +20,5 @@ export async function PaymentIntention(req: Request, res: Response) {
 export async function handlePaymentWebhook(req: Request, res: Response) {
   console.log(req.body);
 
-  res.sendStatus(200);
+  res.status(200).json(req.body);
 }
