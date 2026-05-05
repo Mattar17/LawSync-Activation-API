@@ -30,6 +30,10 @@ const limiter = rateLimit({
 const router = express.Router();
 router.use(APIKeyValidation);
 router.use(requestLogger);
+
+router.get("/api/test", (req, res) => {
+  res.status(200).json("This lawsync api testing");
+});
 //Payment
 router.post("/api/payment/:id", PaymentIntention);
 //Activation

@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
 import CreateIntention from "../Services/CreatePaymentIntention.js";
+import supabase from "../Services/supabaseClient.js";
+import logger from "../utils/logger.js";
 
 export async function PaymentIntention(req: Request, res: Response) {
   try {
@@ -19,6 +21,10 @@ export async function PaymentIntention(req: Request, res: Response) {
 //https://accept.paymob.com/unifiedcheckout/?publicKey={your_public_key}&clientSecret={the_client_secret}'
 export async function handlePaymentWebhook(req: Request, res: Response) {
   console.log(req.body);
-
+  const { success } = req.body.obj;
+  if (success) {
+    logger.log("warn", "successfulPayement");
+  }
+  console.log(res);
   res.status(200).json(req.body);
 }

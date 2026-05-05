@@ -49,7 +49,11 @@ export default async function CreateIntention(userId: string) {
   const res = await fetch("https://accept.paymob.com/v1/intention/", {
     method: "POST",
     headers: myHeaders,
-    body: JSON.stringify({ ...raw, special_reference: newSpecialReference }),
+    body: JSON.stringify({
+      ...raw,
+      special_reference: newSpecialReference,
+      user_id: userId,
+    }),
     redirect: "follow",
   });
 
