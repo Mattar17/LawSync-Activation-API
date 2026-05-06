@@ -90,7 +90,7 @@ export async function handlePaymentWebhook(req: Request, res: Response) {
     console.log("HMAC verified ✅");
 
     // 4. Update your database
-    if (success && is_capture) {
+    if (success) {
       // mark order as paid
       console.log("Payment SUCCESS → update DB");
     } else {
