@@ -22,8 +22,8 @@ export async function PaymentIntention(req: Request, res: Response) {
 export async function handlePaymentWebhook(req: Request, res: Response) {
   console.log("BODY:", req.body);
 
-  if (!req.body || !req.body.obj) {
-    return res.status(400).json({ error: "Invalid payload" });
-  }
+  // if (!req.body || !req.body.obj) {
+  //   return res.status(400).json({ error: "Invalid payload" });
+  // }
   res.sendStatus(200);
 }
