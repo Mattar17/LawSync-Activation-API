@@ -76,6 +76,7 @@ export async function handlePaymentWebhook(req: Request, res: Response) {
 
     console.log("Payment ID:", id);
     console.log("Success:", success);
+    console.log("is Capture", is_capture);
 
     // 3. (IMPORTANT) Verify HMAC signature
     const receivedHmac = req.query.hmac as string;
