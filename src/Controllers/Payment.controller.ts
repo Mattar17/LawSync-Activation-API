@@ -5,6 +5,40 @@ import logger from "../utils/logger.js";
 import crypto from "crypto";
 import { lookup } from "dns";
 
+function calculateHMAC(data: any) {
+  const safe = (v: any) => (v === undefined || v === null ? "" : v);
+  const bool = (v: any) => (v === true ? "true" : v === false ? "false" : "");
+
+  const hmacString =
+    safe(data.amount_cents) +
+    safe(data.created_at) +
+    safe(data.currency) +
+    bool(data.error_occured) +
+    bool(data.has_parent_transaction) +
+    safe(data.id) +
+    safe(data.integration_id) +
+    bool(data.is_3d_secure) +
+    bool(data.is_auth) +
+    bool(data.is_capture) +
+    bool(data.is_refunded) +
+    bool(data.is_standalone_payment) +
+    bool(data.is_voided) +
+    safe(data.order?.id) +
+    safe(data.owner) +
+    bool(data.pending) +
+    safe(data.source_data?.pan) +
+    safe(data.source_data?.sub_type) +
+    safe(data.source_data?.type) +
+    bool(data.success);
+
+  const calculatedHmac = crypto
+    .createHmac("sha512", process.env.PAYMOB_HMAC_SECRET!)
+    .update(hmacString)
+    .digest("hex");
+
+  return calculatedHmac;
+}
+
 export async function PaymentIntention(req: Request, res: Response) {
   try {
     const { id } = req.params;
@@ -46,13 +80,7 @@ export async function handlePaymentWebhook(req: Request, res: Response) {
     // 3. (IMPORTANT) Verify HMAC signature
     const receivedHmac = req.query.hmac as string;
 
-    const calculatedHmac = crypto
-      .createHmac("sha512", process.env.PAYMOB_HMAC_SECRET!)
-      .update(
-        `${data.amount_cents}${data.created_at}${data.currency}${data.error_occured}${data.has_parent_transaction}${data.id}${data.integration_id}${data.is_3d_secure}${data.is_auth}${data.is_capture}${data.is_refunded}${data.is_standalone_payment}${data.is_voided}${data.order.id}${data.owner}${data.pending}${data.source_data.pan}${data.source_data.sub_type}${data.source_data.type}${data.success}`,
-      )
-      .digest("hex");
-
+    const calculatedHmac = calculateHMAC(data);
     if (receivedHmac !== calculatedHmac) {
       console.log("Invalid HMAC ❌");
       return res.status(403).json({ error: "Invalid signature" });
