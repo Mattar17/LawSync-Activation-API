@@ -3,6 +3,7 @@ import CreateIntention from "../Services/CreatePaymentIntention.js";
 import supabase from "../Services/supabaseClient.js";
 import logger from "../utils/logger.js";
 import crypto from "crypto";
+import { lookup } from "dns";
 
 export async function PaymentIntention(req: Request, res: Response) {
   try {
@@ -24,6 +25,8 @@ export async function PaymentIntention(req: Request, res: Response) {
 export async function handlePaymentWebhook(req: Request, res: Response) {
   try {
     console.log("Webhook received");
+    logger.log("info", req.query);
+    logger.log("info", req.params);
 
     // 1. Validate body exists
     if (!req.body || !req.body.obj) {
