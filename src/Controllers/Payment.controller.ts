@@ -21,10 +21,9 @@ export async function PaymentIntention(req: Request, res: Response) {
 //https://accept.paymob.com/unifiedcheckout/?publicKey={your_public_key}&clientSecret={the_client_secret}'
 export async function handlePaymentWebhook(req: Request, res: Response) {
   console.log(req.body);
-  const { success } = req.body.obj;
+  const { success } = req.body?.obj;
   if (success) {
     logger.log("warn", "successfulPayement");
   }
-  console.log(res);
-  res.status(200).json(req.body);
+  res.status(200).json();
 }
