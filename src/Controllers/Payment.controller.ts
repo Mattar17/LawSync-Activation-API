@@ -25,8 +25,8 @@ export async function PaymentIntention(req: Request, res: Response) {
 export async function handlePaymentWebhook(req: Request, res: Response) {
   try {
     console.log("Webhook received");
-    logger.log("info", req.query);
-    logger.log("info", req.params);
+    logger.log("info", { message: "Request Queries", data: req.query });
+    logger.log("info", { message: "Request Params", data: req.params });
 
     // 1. Validate body exists
     if (!req.body || !req.body.obj) {
