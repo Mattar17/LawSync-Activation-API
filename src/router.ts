@@ -18,6 +18,7 @@ import {
 
 import { rateLimit } from "express-rate-limit";
 import AccessPortal from "./Controllers/AccessPortal.js";
+import Register from "./Controllers/Register.js";
 
 const limiter = rateLimit({
   windowMs: 20 * 60 * 1000,
@@ -90,6 +91,7 @@ router.post("/api/sync", syncCases);
 
 //Login
 router.post("/api/login", Login);
+router.post("/api/register", Register);
 router.post("/api/portal-access", AccessPortal);
 
 export default router;
