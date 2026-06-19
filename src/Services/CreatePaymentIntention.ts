@@ -4,13 +4,13 @@ myHeaders.append("Content-Type", "application/json");
 myHeaders.append("api_key", process.env.PAYMOB_API_KEY!);
 
 var raw = {
-  amount: 150,
+  amount: 150 * 100,
   currency: "EGP",
   payment_methods: [5624415],
   items: [
     {
       name: "Monthly Payment",
-      amount: 150,
+      amount: 150 * 100,
       description: "get a monthly description in lawsync",
       quantity: 1,
     },
@@ -34,7 +34,7 @@ var raw = {
   special_reference: `order_${Date.now()}`,
   expiration: 3600,
   notification_url:
-    "https://law-sync-activation-api.vercel.app/api/payment/webhook",
+    "https://hooks.paymob.com/e99a8122-972e-4db3-94fe-5e073b150d60",
   redirection_url: "https://lawsync-saas.vercel.app/payment_webhook",
 };
 

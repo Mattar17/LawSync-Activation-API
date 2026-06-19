@@ -1,42 +1,43 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface ILawyer extends Document {
-  token: string;
+  email: string;
+  passwordHash: string;
   name: string;
-  avatarUrl: string;
-  portal_password: string;
-  profile_password: string;
-  description: string;
+  pictureUrl?: string;
+  bio?: string;
+  phone?: string;
 }
 
 const LawyerSchema: Schema<ILawyer> = new Schema(
   {
-    token: {
+    email: {
       type: String,
+      required: true,
       unique: true,
+      trim: true,
+      lowercase: true,
+    },
+    passwordHash: {
+      type: String,
+      required: true,
     },
     name: {
       type: String,
       required: true,
       trim: true,
     },
-    avatarUrl: {
+    pictureUrl: {
       type: String,
+      default: null,
     },
-    portal_password: {
+    bio: {
       type: String,
-      required: true,
-      default: "0000",
+      default: null,
     },
-    profile_password: {
+    phone: {
       type: String,
-      required: true,
-      default: "0000",
-    },
-    description: {
-      type: String,
-      required: true,
-      default: "LawySync lawyer",
+      default: null,
     },
   },
   {
@@ -44,7 +45,6 @@ const LawyerSchema: Schema<ILawyer> = new Schema(
   },
 );
 
-// 3. Model
 const LawyerModel = mongoose.model<ILawyer>("Lawyer", LawyerSchema);
 
 export default LawyerModel;
