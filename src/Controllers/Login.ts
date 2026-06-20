@@ -49,10 +49,17 @@ export const Login = async (req: Request, res: Response) => {
       lawyer_id: lawyer.id,
     });
 
+    const lawyerInfo = {
+      name: lawyer.name,
+      bio: lawyer.bio,
+      email: lawyer.email,
+      pictureUrl: lawyer.pictureUrl,
+    };
+
     logger.info(`Lawyer login successful for email: ${email}`);
     return res.status(200).json({
       success: true,
-      data: generatedToken,
+      data: { token: generatedToken, user: lawyerInfo },
     });
   } catch (err) {
     logger.error(`Login error: ${err}`);
