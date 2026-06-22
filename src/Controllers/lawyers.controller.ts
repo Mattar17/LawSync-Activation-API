@@ -21,7 +21,6 @@ export const getLawyerByIdHelper = async (id: string) => {
     .single();
 
   if (error) throw error;
-  console.log(data);
   return data;
 };
 
@@ -205,7 +204,6 @@ export const updateLawyer = async (req: AuthRequest, res: Response) => {
         message: "Lawyer not found",
       });
     }
-    console.log(req.token, lawyer.token);
     if (req.token?.lawyer_id !== lawyer.id) {
       logger.warn("Unauthorized update attempt", {
         user: req.token?.lawyer_token,
@@ -216,12 +214,11 @@ export const updateLawyer = async (req: AuthRequest, res: Response) => {
         message: "Access denied",
       });
     }
-
     const { data, error } = await supabase
       .from("lawyers")
       .update(req.body)
       .eq("id", req.params.id)
-      .select()
+      .select("*")
       .single();
 
     if (error) throw error;
@@ -390,37 +387,58 @@ export const updatePortalPassword = async (req: AuthRequest, res: Response) => {
 };
 
 export const setProfilePicture = async (req: Request, res: Response) => {
-  const { file } = req;
-  const { id } = req.params;
+  try {
+    const { file } = req;
+    const { id } = req.params;
 
-  if (!file)
-    return res
-      .status(403)
-      .json({ success: false, message: "يعتذر قراءة الملف" });
+    if (!file) {
+      return res.status(400).json({
+        success: false,
+        message: "يتعذر قراءة الملف",
+      });
+    }
 
-  const { data: result, error: uploadError } = await supabase.storage
-    .from("profile_pictures")
-    .upload(`public/${file.originalname}`, file.buffer, {
-      contentType: file.mimetype,
-      upsert: true,
+    const { data: result, error: uploadError } = await supabase.storage
+      .from("profile_pictures")
+      .upload(`public/${file.originalname}`, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      logger.error(`Error while uploading picture: ${uploadError}`);
+      return res.status(500).json({
+        success: false,
+        message: uploadError.message,
+      });
+    }
+
+    const { data } = supabase.storage
+      .from("profile_pictures")
+      .getPublicUrl(`public/${file.originalname}`);
+    console.log("data from supabase storage: ", data);
+    const { error: updateError } = await supabase
+      .from("lawyers")
+      .update({ picture_url: data.publicUrl })
+      .eq("id", id);
+
+    if (updateError) {
+      logger.error(`Error while updating picture: ${updateError}`);
+      return res.status(500).json({
+        success: false,
+        message: updateError.message,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+      message: "تم تعديل الصورة الشخصية بنجاح",
     });
-  if (uploadError) return res.json(`${uploadError.message} upload error`);
-
-  const { data: avatar_url } = supabase.storage
-    .from("profile_pictures")
-    .getPublicUrl(`public/${file.originalname}`);
-  console.log(avatar_url.publicUrl);
-
-  const { data: updateResult, error: updateError } = await supabase
-    .from("lawyers")
-    .update({ avatar_url: avatar_url.publicUrl })
-    .eq("id", id);
-
-  if (updateError) res.json(`${updateError}-> error while updating ${id}`);
-
-  return res.status(200).json({
-    success: true,
-    data: result,
-    message: "تم تعديل الصورة الشخصية بنجاح",
-  });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err instanceof Error ? err.message : "Unknown error",
+    });
+  }
 };
