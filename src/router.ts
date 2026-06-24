@@ -7,6 +7,7 @@ import AdminOnly from "./middlewares/adminOnly.js";
 import verifyToken from "./middlewares/verifyToken.js";
 import { handleDownloads } from "./Controllers/analytics.controller.js";
 import * as LawyerController from "./Controllers/lawyers.controller.js";
+import * as OfficesController from "./Controllers/office.controller.js";
 import { Login } from "./Controllers/Login.js";
 import { requestLogger } from "./middlewares/requestLogger.js";
 import { getLawyerCases, syncCases } from "./Controllers/case.controller.js";
@@ -84,6 +85,9 @@ router.post(
   UploadImage.single("file"),
   LawyerController.setProfilePicture,
 );
+
+//Offices
+router.post("/api/offices", OfficesController.CreateOffice);
 
 //Cases
 router.get("/api/cases/:id", getLawyerCases);
