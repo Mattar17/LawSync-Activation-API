@@ -88,7 +88,9 @@ router.post(
 
 //Offices
 router.post("/api/offices", OfficesController.CreateOffice);
-router.get("/api/offices/:id", OfficesController.getOfficesData);
+router.get("/api/offices/allOffices/:id", OfficesController.getOfficesData);
+router.get("/api/offices/:id", OfficesController.getOfficeById);
+router.put("/api/offices/:id", verifyToken, OfficesController.updateOffice);
 
 //Cases
 router.get("/api/cases/:id", getLawyerCases);
