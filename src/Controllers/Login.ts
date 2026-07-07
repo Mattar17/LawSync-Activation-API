@@ -50,6 +50,7 @@ export const Login = async (req: Request, res: Response) => {
     });
 
     const lawyerInfo = {
+      id: lawyer.id,
       name: lawyer.name,
       bio: lawyer.bio,
       email: lawyer.email,
