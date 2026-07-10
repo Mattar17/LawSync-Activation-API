@@ -8,6 +8,7 @@ import verifyToken from "./middlewares/verifyToken.js";
 import { handleDownloads } from "./Controllers/analytics.controller.js";
 import * as LawyerController from "./Controllers/lawyers.controller.js";
 import * as OfficesController from "./Controllers/office.controller.js";
+import * as InvitesController from "./Controllers/invites.controller.js";
 import { Login } from "./Controllers/Login.js";
 import { requestLogger } from "./middlewares/requestLogger.js";
 import { getLawyerCases, syncCases } from "./Controllers/case.controller.js";
@@ -91,6 +92,13 @@ router.post("/api/offices", OfficesController.CreateOffice);
 router.get("/api/offices/allOffices/:id", OfficesController.getOfficesData);
 router.get("/api/offices/:id", OfficesController.getOfficeById);
 router.put("/api/offices/:id", verifyToken, OfficesController.updateOffice);
+
+//Invites
+router.post(
+  "/api/offices/:officeId/invites",
+  verifyToken,
+  InvitesController.CreateInvite,
+);
 
 //Cases
 router.get("/api/cases/:id", getLawyerCases);
