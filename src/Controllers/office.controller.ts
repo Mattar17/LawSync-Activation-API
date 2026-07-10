@@ -34,7 +34,7 @@ export async function CreateOffice(req: Request, res: Response) {
     else {
       const { error } = await supabase
         .from("office_members")
-        .insert({ office_id: data.id, lawyer_id: owner_id });
+        .insert({ office_id: data.id, lawyer_id: owner_id, role: "owner" });
       console.log(error?.message);
       return res.status(200).json({ success: true, data });
     }
@@ -43,13 +43,13 @@ export async function CreateOffice(req: Request, res: Response) {
   }
 }
 
-export async function getOfficesData(req: Request, res: Response) {
+export async function getMyOffices(req: AuthRequest, res: Response) {
   try {
-    const { id } = req.params;
+    const lawyer_id = req.token?.lawyer_id;
     const { data, error } = await supabase
       .from("office_members")
       .select("*,offices(id,owner_id,name)")
-      .eq("lawyer_id", id);
+      .eq("lawyer_id", lawyer_id);
     if (error) {
       logger.error(error.message);
       return res.json(error);
@@ -166,12 +166,10 @@ export const updateOffice = async (req: AuthRequest, res: Response) => {
     }
 
     if (req.token?.lawyer_id != data.owner_id) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "You're not allowed to edit this data",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "You're not allowed to edit this data",
+      });
     }
 
     logger.info(`Office updated successfully. OfficeId=${id}`);

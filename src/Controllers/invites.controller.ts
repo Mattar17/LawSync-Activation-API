@@ -185,9 +185,9 @@ export async function getMyInvites(req: AuthRequest, res: Response) {
   }
 }
 
-// POST /api/invites/:token/respond   body: { action: "accepted" | "declined" }
+// POST /api/invites/:inviteId/respond   body: { action: "accepted" | "declined" }
 export async function respondToInvite(req: AuthRequest, res: Response) {
-  const { token } = req.params;
+  const { inviteId } = req.params;
   const { action } = req.body;
   const lawyerId = req.token?.lawyer_id;
 
@@ -199,7 +199,7 @@ export async function respondToInvite(req: AuthRequest, res: Response) {
     const { data: invite, error: inviteError } = await supabase
       .from("invites")
       .select("*")
-      .eq("token", token)
+      .eq("id", inviteId)
       .eq("status", "pending")
       .single();
 
