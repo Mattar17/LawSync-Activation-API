@@ -92,6 +92,11 @@ router.post("/api/offices", OfficesController.CreateOffice);
 router.get("/api/offices/me", verifyToken, OfficesController.getMyOffices);
 router.get("/api/offices/:id", OfficesController.getOfficeById);
 router.put("/api/offices/:id", verifyToken, OfficesController.updateOffice);
+router.post(
+  "/api/offices/:officeId/leave",
+  verifyToken,
+  OfficesController.leaveOffice,
+);
 
 //Invites
 router.post(

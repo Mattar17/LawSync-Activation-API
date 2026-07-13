@@ -188,3 +188,42 @@ export const updateOffice = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+// controllers/officesController.ts
+export async function leaveOffice(req: AuthRequest, res: Response) {
+  const { officeId } = req.params;
+  const lawyerId = req.token?.lawyer_id;
+  const { data: office, error: officeErr } = await supabase
+    .from("offices")
+    .select("id, owner_id")
+    .eq("id", officeId)
+    .single();
+
+  if (officeErr || !office) {
+    return res
+      .status(404)
+      .json({ success: false, message: "المكتب غير موجود." });
+  }
+
+  if (office.owner_id === lawyerId) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "لا يمكنك مغادرة مكتب أنت مالكه. قم بنقل الملكية أو حذف المكتب أولاً.",
+    });
+  }
+
+  const { error: deleteErr } = await supabase
+    .from("office_members")
+    .delete()
+    .eq("office_id", officeId)
+    .eq("lawyer_id", lawyerId);
+
+  if (deleteErr) {
+    return res
+      .status(500)
+      .json({ success: false, message: "فشل مغادرة المكتب." });
+  }
+
+  return res.status(200).json({ success: true });
+}
