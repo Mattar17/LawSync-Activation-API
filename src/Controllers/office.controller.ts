@@ -227,3 +227,112 @@ export async function leaveOffice(req: AuthRequest, res: Response) {
 
   return res.status(200).json({ success: true });
 }
+
+export async function getOfficeMembers(req: AuthRequest, res: Response) {
+  const { officeId } = req.params;
+  const lawyerId = req.token?.lawyer_id;
+
+  if (!lawyerId) {
+    return res.status(401).json({ message: "غير مصرح" });
+  }
+
+  // Confirm the requester actually belongs to this office before returning data
+  const { data: membership, error: membershipError } = await supabase
+    .from("office_members")
+    .select("id")
+    .eq("office_id", officeId)
+    .eq("lawyer_id", lawyerId)
+    .maybeSingle();
+
+  if (membershipError) {
+    return res.status(500).json({ message: "خطأ في التحقق من العضوية" });
+  }
+  if (!membership) {
+    return res.status(403).json({ message: "لست عضوًا في هذا المكتب" });
+  }
+
+  const { data: office, error: officeError } = await supabase
+    .from("offices")
+    .select("owner_id")
+    .eq("id", officeId)
+    .single();
+
+  if (officeError || !office) {
+    return res.status(404).json({ message: "المكتب غير موجود" });
+  }
+
+  const { data: members, error } = await supabase
+    .from("office_members")
+    .select("lawyer_id, lawyers(id, name, email,picture_url)")
+    .eq("office_id", officeId);
+
+  if (error) {
+    logger.error(error.message);
+    return res.status(500).json({ message: "تعذر تحميل قائمة الأعضاء" });
+  }
+
+  const formatted = (members ?? []).map((m: any) => ({
+    id: m.lawyers.id,
+    name: m.lawyers.name,
+    email: m.lawyers.email,
+    picture_url: m.lawyers.picture_url,
+    role: m.lawyers.id === office.owner_id ? "owner" : "member",
+  }));
+
+  return res.status(200).json({ members: formatted });
+}
+
+export async function kickMember(req: AuthRequest, res: Response) {
+  const { officeId, memberId } = req.params;
+  const lawyerId = req.token?.lawyer_id;
+
+  if (!lawyerId) {
+    return res.status(401).json({ message: "غير مصرح" });
+  }
+
+  const { data: office, error: officeError } = await supabase
+    .from("offices")
+    .select("owner_id")
+    .eq("id", officeId)
+    .single();
+
+  if (officeError || !office) {
+    return res.status(404).json({ message: "المكتب غير موجود" });
+  }
+
+  if (office.owner_id !== lawyerId) {
+    return res
+      .status(403)
+      .json({ message: "فقط مالك المكتب يمكنه إزالة الأعضاء" });
+  }
+
+  if (memberId === office.owner_id) {
+    return res.status(400).json({ message: "لا يمكن إزالة مالك المكتب" });
+  }
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("office_members")
+    .select("id")
+    .eq("office_id", officeId)
+    .eq("lawyer_id", memberId)
+    .maybeSingle();
+
+  if (membershipError) {
+    return res.status(500).json({ message: "خطأ في التحقق من العضوية" });
+  }
+  if (!membership) {
+    return res.status(404).json({ message: "هذا المحامي ليس عضوًا في المكتب" });
+  }
+
+  const { error: deleteError } = await supabase
+    .from("office_members")
+    .delete()
+    .eq("office_id", officeId)
+    .eq("lawyer_id", memberId);
+
+  if (deleteError) {
+    return res.status(500).json({ message: "تعذرت إزالة المحامي" });
+  }
+
+  return res.status(200).json({ message: "تمت إزالة المحامي من المكتب" });
+}

@@ -97,6 +97,16 @@ router.post(
   verifyToken,
   OfficesController.leaveOffice,
 );
+router.get(
+  "/api/offices/:officeId/members",
+  verifyToken,
+  OfficesController.getOfficeMembers,
+);
+router.delete(
+  "/api/offices/:officeId/members/:memberId",
+  verifyToken,
+  OfficesController.kickMember,
+);
 
 //Invites
 router.post(

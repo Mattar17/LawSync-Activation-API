@@ -54,7 +54,7 @@ export const Login = async (req: Request, res: Response) => {
       name: lawyer.name,
       bio: lawyer.bio,
       email: lawyer.email,
-      pictureUrl: lawyer.pictureUrl,
+      pictureUrl: lawyer.picture_url,
     };
 
     logger.info(`Lawyer login successful for email: ${email}`);
