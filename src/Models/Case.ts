@@ -1,101 +1,64 @@
-import { Schema, model } from "mongoose";
+export const CASE_STATUSES = [
+  "قضية جديدة",
+  "قيد المراجعة",
+  "تم رفع الدعوى",
+  "قيد النظر",
+  "انتظار الجلسة",
+  "تم تحديد جلسة",
+  "قيد التحقيق",
+  "انتظار الحكم",
+  "تم الاستئناف",
+  "تنفيذ الحكم",
+  "موقوفة",
+  "مغلقة",
+  "كسبت",
+  "خُسرت",
+  "تمت التسوية",
+  "رُفضت",
+  "تم التنازل عنها",
+] as const;
 
-export interface ICase {
-  lawyer_token: string;
+export type CaseStatus = (typeof CASE_STATUSES)[number];
+
+export const PARTY_ROLES = [
+  "مدعي",
+  "مدعى عليه",
+  "مستأنف",
+  "مستأنف ضده",
+] as const;
+
+export type PartyRole = (typeof PARTY_ROLES)[number];
+
+export interface Case {
+  id: string;
+  office_id: string;
+
+  title: string;
+  description?: string;
+
   case_number: string;
   case_year: string;
+
   client_name: string;
   client_opponent_name: string;
-  client_role: "مدعي" | "مدعى عليه";
-  client_opponent_role: "مدعي" | "مدعى عليه";
+
+  client_role: PartyRole;
+  client_opponent_role: PartyRole;
+
   client_national_id: string;
   client_opponent_national_id: string;
+
   latest_court_session_date?: string;
   next_court_session_date?: string;
-  case_status?: string;
+
+  case_status: CaseStatus;
+  latest_update: string;
+
+  assigned_lawyer_id?: string;
+
+  opened_at: string;
+  closed_at?: string;
+
+  created_at: string;
+  updated_at: string;
 }
-
-const caseSchema = new Schema<ICase>(
-  {
-    lawyer_token: {
-      type: String,
-      unique: true,
-    },
-    case_number: {
-      type: String,
-      required: [true, "رقم القضية مطلوب"],
-      unique: true,
-    },
-
-    case_year: {
-      type: String,
-      required: [true, "يجب ادخال هذا الحقل"],
-    },
-
-    client_name: {
-      type: String,
-      required: [true, "اسم الموكل مطلوب"],
-      trim: true,
-    },
-
-    client_opponent_name: {
-      type: String,
-      required: [true, "اسم الخصم مطلوب"],
-      trim: true,
-    },
-
-    client_role: {
-      type: String,
-      enum: {
-        values: ["مدعي", "مدعى عليه", "مستأنف", "مستأنف ضده"],
-        message: "صفة الموكل غير صحيحة",
-      },
-      required: [true, "صفة الموكل مطلوبة"],
-    },
-
-    client_opponent_role: {
-      type: String,
-      enum: {
-        values: ["مدعي", "مدعى عليه", "مستأنف", "مستأنف ضده"],
-        message: "صفة الخصم غير صحيحة",
-      },
-      required: [true, "صفة الخصم مطلوبة"],
-    },
-
-    client_national_id: {
-      type: String,
-      required: [true, "الرقم القومي مطلوب"],
-      match: [/^[0-9]{14}$/, "الرقم القومي يجب أن يتكون من 14 رقمًا"],
-      validate: {
-        validator: (v?: string) => v?.length === 14,
-        message: "الرقم القومي يجب أن يكون 14 رقمًا",
-      },
-    },
-    client_opponent_national_id: {
-      type: String,
-      required: [true, "الرقم القومي للخصم مطلوب"],
-      match: [/^[0-9]{14}$/, "الرقم القومي للخصم يجب أن يتكون من 14 رقمًا"],
-      validate: {
-        validator: (v?: string) => v?.length === 14,
-        message: "الرقم القومي للخصم يجب أن يكون 14 رقمًا",
-      },
-    },
-    latest_court_session_date: {
-      type: String,
-    },
-    next_court_session_date: {
-      type: String,
-    },
-
-    case_status: {
-      type: String,
-      default: "قضية جديدة",
-    },
-  },
-  {
-    timestamps: true,
-  },
-);
-
-const CaseModel = model<ICase>("Case", caseSchema);
-export default CaseModel;

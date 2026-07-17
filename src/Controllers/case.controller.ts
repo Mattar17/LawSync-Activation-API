@@ -1,160 +1,71 @@
 import type { Request, Response } from "express";
-import supabase from "../Services/supabaseClient.js"; // make sure you have this
+import supabase from "../Services/supabaseClient.js";
 import logger from "../utils/logger.js";
+import { success } from "zod";
 
-/**
- * Sync Cases (UPSERT)
- */
-export const syncCases = async (req: Request, res: Response) => {
+interface AuthRequest extends Request {
+  token?: {
+    admin?: boolean;
+    lawyer_token?: string;
+    lawyer_id?: string;
+  };
+}
+//POST /offices/:officeId/cases (owner only)
+export async function CreateCase(req: AuthRequest, res: Response) {
   try {
-    const { token, cases } = req.body;
+    const { officeId } = req.params;
+    const lawyerId = req.token?.lawyer_id;
 
-    logger.info("SyncCases request received", {
-      id: token?.slice(0, 5) + "***",
-      casesCount: cases?.length,
-    });
-
-    // 1. Check lawyer exists
-    const { data: lawyer, error: lawyerError } = await supabase
-      .from("lawyers")
-      .select("*")
-      .eq("token", token)
+    const { data: office, error: officeError } = await supabase
+      .from("offices")
+      .select("owner_id")
+      .eq("id", officeId)
       .single();
 
-    if (lawyerError || !lawyer) {
-      logger.warn("Invalid lawyer token in SyncCases", {
-        id: token?.slice(0, 5) + "***",
-      });
+    if (officeError || !office)
+      return res
+        .status(404)
+        .json({ success: false, message: "Office doesn't exist" });
 
+    if (office.owner_id !== lawyerId)
       return res.status(403).json({
         success: false,
-        message: "Invalid lawyer token",
-      });
-    }
-
-    // 2. Validate cases
-    if (!Array.isArray(cases) || cases.length === 0) {
-      logger.warn("Empty or invalid cases payload", {
-        id: token?.slice(0, 5) + "***",
+        message: "Only owner can add cases to this office ",
       });
 
-      return res.status(400).json({
-        success: false,
-        message: "Cases array is required",
-      });
-    }
+    const caseData = {
+      ...req.body,
+      office_id: officeId,
+    };
 
-    // 3. Prepare data
-    const payload = cases.map((c) => {
-      const { _id, ...rest } = {
-        ...c,
-        lawyer_id: lawyer.id,
-        case_mongo_id: c._id,
-      };
-      return rest;
-    });
-
-    // 4. UPSERT (based on unique constraint)
-    const { data, error } = await supabase
+    const { data: createdCase, error: caseError } = await supabase
       .from("cases")
-      .upsert(payload, {
-        onConflict: "case_number,case_year",
-      })
-      .select();
+      .insert(caseData)
+      .select("*")
+      .single();
 
-    if (error) {
-      throw error;
+    if (caseError) {
+      if (caseError?.code === "23505") {
+        return res.status(409).json({
+          success: false,
+          message: "يوجد قضية بنفس الرقم والسنة داخل هذا المكتب",
+        });
+      }
+      logger.error(`Error creating the case : ${caseError.message}`);
+      return res
+        .status(500)
+        .json({ success: false, message: "خطأ أثناء إضافة قضية" });
     }
 
-    logger.info("SyncCases completed", {
-      token: token?.slice(0, 5) + "***",
-      count: data?.length,
-    });
-
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
-      message: "Sync completed",
-      count: data?.length,
+      message: "Case Added Successfully",
+      data: createdCase,
     });
-  } catch (err: any) {
-    logger.error("SyncCases error", {
-      message: err.message,
-      stack: err.stack,
-    });
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+  } catch (error: any) {
+    logger.error(`Error creating the case : ${error.message}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "خطأ أثناء إضافة قضية" });
   }
-};
-
-/**
- * Get Lawyer Cases
- */
-export const getLawyerCases = async (
-  req: Request,
-  res: Response,
-): Promise<Response> => {
-  try {
-    const { id } = req.params;
-
-    logger.info("Get lawyer cases request", {
-      token: id?.slice(0, 5) + "***",
-    });
-
-    const { data: cases, error } = await supabase
-      .from("cases")
-      .select(
-        `
-        case_number,
-        case_year,
-        client_name,
-        client_opponent_name,
-        client_role,
-        client_opponent_role,
-        client_national_id,
-        client_opponent_national_id,
-        latest_court_session_date,
-        next_court_session_date,
-        case_status
-      `,
-      )
-      .eq("lawyer_id", id);
-
-    if (error) {
-      throw error;
-    }
-
-    if (!cases || cases.length === 0) {
-      logger.warn("No cases found for lawyer", {
-        id: id?.slice(0, 5) + "***",
-      });
-
-      return res.status(404).json({
-        success: false,
-        message: "No cases found for this lawyer",
-      });
-    }
-
-    logger.info("Lawyer cases fetched", {
-      id: id?.slice(0, 5) + "***",
-      count: cases.length,
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: cases,
-    });
-  } catch (err: any) {
-    logger.error("Get lawyer cases error", {
-      message: err.message,
-      stack: err.stack,
-    });
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
-  }
-};
+}
