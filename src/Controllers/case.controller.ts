@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import supabase from "../Services/supabaseClient.js";
 import logger from "../utils/logger.js";
 import { success } from "zod";
+import { subscribe } from "node:diagnostics_channel";
 
 interface AuthRequest extends Request {
   token?: {
@@ -15,7 +16,7 @@ export async function CreateCase(req: AuthRequest, res: Response) {
   try {
     const { officeId } = req.params;
     const lawyerId = req.token?.lawyer_id;
-
+    console.log(officeId, lawyerId);
     const { data: office, error: officeError } = await supabase
       .from("offices")
       .select("owner_id")
@@ -67,5 +68,161 @@ export async function CreateCase(req: AuthRequest, res: Response) {
     return res
       .status(500)
       .json({ success: false, message: "خطأ أثناء إضافة قضية" });
+  }
+}
+
+//GET /offices/:officeId/cases (owner can see all , lawyer can see cases the assigned to him)
+export async function getOfficeCases(req: AuthRequest, res: Response) {
+  try {
+    const { officeId } = req.params;
+    const lawyerId = req.token?.lawyer_id;
+
+    if (!lawyerId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مسموح لك الإطلاع علي قضايا هذا المكتب",
+      });
+    }
+
+    const { data: office, error: officeError } = await supabase
+      .from("offices")
+      .select("owner_id")
+      .eq("id", officeId)
+      .single();
+
+    if (!office || officeError) {
+      return res
+        .status(404)
+        .json({ success: false, message: "المكتب غير موجود أو تم حذفه" });
+    }
+
+    if (office.owner_id !== lawyerId) {
+      const { data: membership, error: membershipError } = await supabase
+        .from("office_members")
+        .select("id")
+        .eq("office_id", officeId)
+        .eq("lawyer_id", lawyerId)
+        .single();
+
+      if (!membership || membershipError) {
+        return res.status(403).json({
+          success: false,
+          message: "غير مسموح لك الإطلاع علي قضايا هذا المكتب",
+        });
+      }
+    }
+    let fetchedCases;
+    if (office.owner_id === lawyerId) {
+      const { data, error } = await supabase
+        .from("cases")
+        .select("*")
+        .eq("office_id", officeId);
+
+      if (error)
+        return res.status(500).json({
+          success: false,
+          message: "خطأ أثناء تحميل القضايا الخاصة بالمكتب",
+        });
+      fetchedCases = data;
+    } else {
+      const { data, error } = await supabase
+        .from("cases")
+        .select("*")
+        .eq("office_id", officeId)
+        .eq("assigned_lawyer_id", lawyerId);
+
+      if (error)
+        return res.status(500).json({
+          success: false,
+          message: "خطأ أثناء تحميل القضايا الخاصة بك",
+        });
+      fetchedCases = data;
+    }
+    return res.status(200).json({ success: true, data: fetchedCases });
+  } catch (error: any) {
+    logger.error(`Error fetching office cases: ${error.message}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "حدث خطأ أثناء تحميل قضايا المكتب" });
+  }
+}
+
+//PATCH offices/:officeId/cases/:caseId/assign
+export async function assignLawyerToCase(req: AuthRequest, res: Response) {
+  try {
+    const { officeId } = req.params;
+    const lawyerId = req.token?.lawyer_id;
+    const lawyerToAssign = req.body.id;
+    const { caseId } = req.params;
+
+    if (!lawyerId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مسموح لك الإطلاع علي قضايا هذا المكتب",
+      });
+    }
+
+    const { data: office, error: officeError } = await supabase
+      .from("offices")
+      .select("owner_id")
+      .eq("id", officeId)
+      .single();
+
+    if (!office || officeError) {
+      return res
+        .status(404)
+        .json({ success: false, message: "المكتب غير موجود أو تم حذفه" });
+    }
+
+    if (office.owner_id !== lawyerId)
+      return res.status(403).json({
+        success: false,
+        message: "غير مسموح لك بتعيين محامي علي القضية",
+      });
+    if (office.owner_id === lawyerToAssign)
+      return res.status(403).json({
+        success: false,
+        message: "لا يمكن تعيين مالك المكتب علي القضية",
+      });
+
+    const { data: membership, error: membershipError } = await supabase
+      .from("office_members")
+      .select("id")
+      .eq("office_id", officeId)
+      .eq("lawyer_id", lawyerToAssign)
+      .single();
+
+    if (!membership || membershipError) {
+      return res.status(403).json({
+        success: false,
+        message: "هذا المحامي ليس عضواً في المكتب",
+      });
+    }
+
+    const { data: updatedCase, error: updateError } = await supabase
+      .from("cases")
+      .update({ assigned_lawyer_id: lawyerToAssign })
+      .eq("id", caseId)
+      .eq("office_id", officeId)
+      .select("id");
+
+    if (updateError)
+      return res
+        .status(500)
+        .json({ success: false, message: "خطأ أثناء تعيين المحامي" });
+
+    if (!updatedCase || updatedCase.length === 0)
+      return res
+        .status(404)
+        .json({ success: false, message: "القضية غير موجود" });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "تم تعيين المحامي علي القضية بنجاح" });
+  } catch (error: any) {
+    logger.error(`Error assigning lawyer to case: ${error.message}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "حدث خطأ أثناء تعيين المحامي" });
   }
 }

@@ -41,9 +41,9 @@ export const createCaseSchema = z
 
     client_opponent_name: z.string().min(1, "اسم الخصم مطلوب"),
 
-    client_role: z.enum(PARTY_ROLES),
+    client_role: z.enum(PARTY_ROLES, "صفة الموكل غير صحيحة"),
 
-    client_opponent_role: z.enum(PARTY_ROLES),
+    client_opponent_role: z.enum(PARTY_ROLES, "صفة الخصم غير صحيحة"),
 
     client_national_id: z.string().regex(/^\d{14}$/, "الرقم القومي غير صحيح"),
 

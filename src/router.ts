@@ -1,17 +1,18 @@
 import express from "express";
 import APIKeyValidation from "./middlewares/APIKeyValidator.js";
+import validateRequestBody from "./middlewares/validateRequestBody.js";
+import AdminOnly from "./middlewares/adminOnly.js";
+import verifyToken from "./middlewares/verifyToken.js";
 import ValidateLicense from "./Controllers/ValidateLicense.js";
 import ActivateLicense from "./Controllers/ActivateLicense.js";
 import StartTrial from "./Controllers/StartTrial.js";
-import AdminOnly from "./middlewares/adminOnly.js";
-import verifyToken from "./middlewares/verifyToken.js";
 import { handleDownloads } from "./Controllers/analytics.controller.js";
 import * as LawyerController from "./Controllers/lawyers.controller.js";
 import * as OfficesController from "./Controllers/office.controller.js";
 import * as InvitesController from "./Controllers/invites.controller.js";
+import * as CasesController from "./Controllers/case.controller.js";
 import { Login } from "./Controllers/Login.js";
 import { requestLogger } from "./middlewares/requestLogger.js";
-import { getLawyerCases, syncCases } from "./Controllers/case.controller.js";
 import { UploadImage } from "./Services/UploadImage.js";
 import {
   handlePaymentWebhook,
@@ -21,6 +22,7 @@ import {
 import { rateLimit } from "express-rate-limit";
 import AccessPortal from "./Controllers/AccessPortal.js";
 import Register from "./Controllers/Register.js";
+import { createCaseSchema } from "./ValidationSchemas/CaseSchema.js";
 
 const limiter = rateLimit({
   windowMs: 20 * 60 * 1000,
@@ -128,8 +130,22 @@ router.post(
 router.delete("/api/invites/:id", verifyToken, InvitesController.cancelInvite);
 
 //Cases
-router.get("/api/cases/:id", getLawyerCases);
-router.post("/api/sync", syncCases);
+router.post(
+  "/api/offices/:officeId/cases",
+  verifyToken,
+  validateRequestBody(createCaseSchema),
+  CasesController.CreateCase,
+);
+router.get(
+  "/api/offices/:officeId/cases",
+  verifyToken,
+  CasesController.getOfficeCases,
+);
+router.patch(
+  "/api/offices/:officeId/cases/:caseId/assign",
+  verifyToken,
+  CasesController.assignLawyerToCase,
+);
 
 //Login
 router.post("/api/login", Login);
