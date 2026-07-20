@@ -146,6 +146,11 @@ router.patch(
   verifyToken,
   CasesController.assignLawyerToCase,
 );
+router.get(
+  "/api/offices/:officeId/cases/:caseId",
+  verifyToken,
+  CasesController.getCaseDetails,
+);
 
 //Login
 router.post("/api/login", Login);

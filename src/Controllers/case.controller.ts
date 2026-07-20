@@ -226,3 +226,57 @@ export async function assignLawyerToCase(req: AuthRequest, res: Response) {
       .json({ success: false, message: "حدث خطأ أثناء تعيين المحامي" });
   }
 }
+
+//GET offices/:officeId/cases/:caseId (owner and assigned lawyer only)
+export async function getCaseDetails(req: AuthRequest, res: Response) {
+  try {
+    const { officeId, caseId } = req.params;
+    const lawyerId = req.token?.lawyer_id;
+
+    if (!lawyerId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مسموح لك الإطلاع علي قضايا هذا المكتب",
+      });
+    }
+
+    const { data: office, error: officeError } = await supabase
+      .from("offices")
+      .select("owner_id")
+      .eq("id", officeId)
+      .single();
+
+    if (!office || officeError) {
+      return res
+        .status(404)
+        .json({ success: false, message: "المكتب غير موجود أو تم حذفه" });
+    }
+
+    const { data: fetchedCase, error: fetchedCaseError } = await supabase
+      .from("cases")
+      .select("*")
+      .eq("office_id", officeId)
+      .eq("id", caseId)
+      .single();
+
+    if (!fetchedCase || fetchedCaseError)
+      return res
+        .status(404)
+        .json({ success: false, message: "القضية غير موجود أو تم حذفها" });
+
+    if (
+      office.owner_id !== lawyerId &&
+      fetchedCase.assigned_lawyer_id !== lawyerId
+    )
+      return res
+        .status(403)
+        .json({ success: false, message: "لا يمكنك الإطلاع علي هذه القضية" });
+
+    return res.status(200).json({ success: true, data: fetchedCase });
+  } catch (error: any) {
+    logger.error(`Error fetching case details: ${error.message}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "حدث خطأ أثناء تحميل بيانات القضية" });
+  }
+}
