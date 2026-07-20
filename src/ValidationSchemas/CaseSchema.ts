@@ -63,21 +63,19 @@ export const createCaseSchema = z
     case_status: z.enum(CASE_STATUSES).default("قضية جديدة"),
 
     latest_update: z.string().default("لم يتم العمل عليها بعد"),
-
-    assigned_lawyer_id: z.string().optional(),
   })
-  .strict()
-  .superRefine((data, ctx) => {
-    if (
-      data.latest_court_session_date &&
-      data.next_court_session_date &&
-      new Date(data.latest_court_session_date) >
-        new Date(data.next_court_session_date)
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["next_court_session_date"],
-        message: "آخر جلسة يجب أن تكون قبل الجلسة القادمة",
-      });
-    }
-  });
+  .strict();
+// .superRefine((data, ctx) => {
+//   if (
+//     data.latest_court_session_date &&
+//     data.next_court_session_date &&
+//     new Date(data.latest_court_session_date) >
+//       new Date(data.next_court_session_date)
+//   ) {
+//     ctx.addIssue({
+//       code: z.ZodIssueCode.custom,
+//       path: ["next_court_session_date"],
+//       message: "آخر جلسة يجب أن تكون قبل الجلسة القادمة",
+//     });
+//   }
+// });

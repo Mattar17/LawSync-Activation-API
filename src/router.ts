@@ -134,7 +134,7 @@ router.post(
   "/api/offices/:officeId/cases",
   verifyToken,
   validateRequestBody(createCaseSchema),
-  CasesController.CreateCase,
+  CasesController.createCase,
 );
 router.get(
   "/api/offices/:officeId/cases",
@@ -155,6 +155,11 @@ router.patch(
   "/api/offices/:officeId/cases/:caseId",
   verifyToken,
   CasesController.updateCase,
+);
+router.delete(
+  "/api/offices/:officeId/cases/:caseId",
+  verifyToken,
+  CasesController.deleteCase,
 );
 
 //Login

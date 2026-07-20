@@ -5,6 +5,7 @@ import {
   lawyerUpdateSchema,
   ownerUpdateSchema,
 } from "../ValidationSchemas/CaseUpdateSchema.js";
+import { success } from "zod";
 
 interface AuthRequest extends Request {
   token?: {
@@ -14,11 +15,16 @@ interface AuthRequest extends Request {
   };
 }
 //POST /offices/:officeId/cases (owner only)
-export async function CreateCase(req: AuthRequest, res: Response) {
+export async function createCase(req: AuthRequest, res: Response) {
   try {
     const { officeId } = req.params;
     const lawyerId = req.token?.lawyer_id;
-    console.log(officeId, lawyerId);
+    if (!lawyerId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مسموح لك الإطلاع علي قضايا هذا المكتب",
+      });
+    }
     const { data: office, error: officeError } = await supabase
       .from("offices")
       .select("owner_id")
@@ -28,12 +34,12 @@ export async function CreateCase(req: AuthRequest, res: Response) {
     if (officeError || !office)
       return res
         .status(404)
-        .json({ success: false, message: "Office doesn't exist" });
+        .json({ success: false, message: "المكتب غير موجود" });
 
     if (office.owner_id !== lawyerId)
       return res.status(403).json({
         success: false,
-        message: "Only owner can add cases to this office ",
+        message: "لا يمكنك إنشاء قضية جديدة لهذا المكتب",
       });
 
     const caseData = {
@@ -62,7 +68,7 @@ export async function CreateCase(req: AuthRequest, res: Response) {
 
     return res.status(201).json({
       success: true,
-      message: "Case Added Successfully",
+      message: "تم إنشاء القضية بنجاح",
       data: createdCase,
     });
   } catch (error: any) {
@@ -361,5 +367,61 @@ export async function updateCase(req: AuthRequest, res: Response) {
     return res
       .status(500)
       .json({ success: false, message: "حدث خطأ أثناء تعديل القضية" });
+  }
+}
+
+//DELETE offices/:officeId/cases/:caseId (owner only)
+export async function deleteCase(req: AuthRequest, res: Response) {
+  try {
+    const { officeId, caseId } = req.params;
+    const lawyerId = req.token?.lawyer_id;
+
+    if (!lawyerId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مسموح لك الإطلاع علي قضايا هذا المكتب",
+      });
+    }
+
+    const { data: office, error: officeError } = await supabase
+      .from("offices")
+      .select("owner_id")
+      .eq("id", officeId)
+      .single();
+
+    if (!office || officeError) {
+      return res
+        .status(404)
+        .json({ success: false, message: "المكتب غير موجود أو تم حذفه" });
+    }
+
+    if (office.owner_id !== lawyerId)
+      return res
+        .status(403)
+        .json({ success: false, message: "مالك المكتب فقط يمكنه حذف القضية" });
+
+    const { data: deletedCase, error: deleteError } = await supabase
+      .from("cases")
+      .delete()
+      .eq("office_id", officeId)
+      .eq("id", caseId)
+      .select("case_number")
+      .single();
+
+    if (!deletedCase || deleteError)
+      return res.status(400).json({
+        success: false,
+        message: "حدث خطأ أثناء حذف القضية أو قضية غير موجودة",
+      });
+
+    return res.status(200).json({
+      success: true,
+      message: `تم حذف القضية رقم ${deletedCase.case_number}`,
+    });
+  } catch (error: any) {
+    logger.error(`Error deleting case: ${error.message}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "حدث خطأ أثناء حذف القضية" });
   }
 }
