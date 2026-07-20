@@ -151,6 +151,11 @@ router.get(
   verifyToken,
   CasesController.getCaseDetails,
 );
+router.patch(
+  "/api/offices/:officeId/cases/:caseId",
+  verifyToken,
+  CasesController.updateCase,
+);
 
 //Login
 router.post("/api/login", Login);

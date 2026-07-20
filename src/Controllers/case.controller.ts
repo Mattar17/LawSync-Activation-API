@@ -1,8 +1,10 @@
 import type { Request, Response } from "express";
 import supabase from "../Services/supabaseClient.js";
 import logger from "../utils/logger.js";
-import { success } from "zod";
-import { subscribe } from "node:diagnostics_channel";
+import {
+  lawyerUpdateSchema,
+  ownerUpdateSchema,
+} from "../ValidationSchemas/CaseUpdateSchema.js";
 
 interface AuthRequest extends Request {
   token?: {
@@ -278,5 +280,86 @@ export async function getCaseDetails(req: AuthRequest, res: Response) {
     return res
       .status(500)
       .json({ success: false, message: "حدث خطأ أثناء تحميل بيانات القضية" });
+  }
+}
+
+//PATCH offices/:officeId/cases/:caseId (owner and assigned lawyer only)
+export async function updateCase(req: AuthRequest, res: Response) {
+  try {
+    const { officeId, caseId } = req.params;
+    const lawyerId = req.token?.lawyer_id;
+
+    if (!lawyerId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مسموح لك الإطلاع علي قضايا هذا المكتب",
+      });
+    }
+
+    const { data: office, error: officeError } = await supabase
+      .from("offices")
+      .select("owner_id")
+      .eq("id", officeId)
+      .single();
+
+    if (!office || officeError) {
+      return res
+        .status(404)
+        .json({ success: false, message: "المكتب غير موجود أو تم حذفه" });
+    }
+
+    const { data: fetchedCase, error: fetchedCaseError } = await supabase
+      .from("cases")
+      .select("id,assigned_lawyer_id")
+      .eq("office_id", officeId)
+      .eq("id", caseId)
+      .single();
+
+    if (!fetchedCase || fetchedCaseError)
+      return res
+        .status(404)
+        .json({ success: false, message: "القضية غير موجود أو تم حذفها" });
+
+    const isOwner = office.owner_id === lawyerId;
+
+    if (!isOwner && fetchedCase.assigned_lawyer_id !== lawyerId)
+      return res
+        .status(403)
+        .json({ success: false, message: "لا يمكنك الإطلاع علي هذه القضية" });
+
+    const schema = isOwner ? ownerUpdateSchema : lawyerUpdateSchema;
+
+    const parsed = schema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: "بيانات غير صالحة للتعديل",
+        errors: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const { data: updatedCase, error: updateError } = await supabase
+      .from("cases")
+      .update(parsed.data)
+      .eq("id", fetchedCase.id)
+      .select("*")
+      .single();
+
+    if (!updatedCase || updateError)
+      return res
+        .status(500)
+        .json({ success: false, message: "حدث خطأ أثناء تعديل القضية" });
+
+    return res.status(200).json({
+      success: true,
+      data: updatedCase,
+      message: "تم تعديل القضية بنجاح",
+    });
+  } catch (error: any) {
+    logger.error(`Error udpating case: ${error.message}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "حدث خطأ أثناء تعديل القضية" });
   }
 }

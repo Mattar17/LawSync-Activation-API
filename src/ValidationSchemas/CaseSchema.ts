@@ -66,6 +66,7 @@ export const createCaseSchema = z
 
     assigned_lawyer_id: z.string().optional(),
   })
+  .strict()
   .superRefine((data, ctx) => {
     if (
       data.latest_court_session_date &&
