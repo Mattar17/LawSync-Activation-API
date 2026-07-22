@@ -338,6 +338,7 @@ export async function updateCase(req: AuthRequest, res: Response) {
     const parsed = schema.safeParse(req.body);
 
     if (!parsed.success) {
+      console.log(parsed.error.issues);
       return res.status(400).json({
         success: false,
         message: "بيانات غير صالحة للتعديل",
@@ -352,10 +353,13 @@ export async function updateCase(req: AuthRequest, res: Response) {
       .select("*")
       .single();
 
-    if (!updatedCase || updateError)
-      return res
-        .status(500)
-        .json({ success: false, message: "حدث خطأ أثناء تعديل القضية" });
+    if (!updatedCase || updateError) {
+      logger.error(updateError?.message);
+      return res.status(500).json({
+        success: false,
+        message: `${updateError?.message}   حدث خطأ أثناء تعديل القضية`,
+      });
+    }
 
     return res.status(200).json({
       success: true,

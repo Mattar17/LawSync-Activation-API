@@ -7,13 +7,16 @@ export const lawyerUpdateSchema = z
     latest_court_session_date: z
       .string()
       .optional()
+      .nullable()
       .refine(
         (date) => !date || new Date(date) <= new Date(),
         "تاريخ آخر جلسة لا يمكن أن يكون في المستقبل",
       ),
-    next_court_session_date: z.string().optional(),
-
-    latest_update: z.string().optional(),
+    next_court_session_date: z.preprocess(
+      (v) => (v === "" ? null : v),
+      z.string().nullable(),
+    ),
+    latest_update: z.string().nullable().optional(),
   })
   .strict();
 

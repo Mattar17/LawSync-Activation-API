@@ -54,11 +54,12 @@ export const createCaseSchema = z
     latest_court_session_date: z
       .string()
       .optional()
+      .nullable()
       .refine(
         (date) => !date || new Date(date) <= new Date(),
         "تاريخ آخر جلسة لا يمكن أن يكون في المستقبل",
       ),
-    next_court_session_date: z.string().optional(),
+    next_court_session_date: z.string().nullable().optional(),
 
     case_status: z.enum(CASE_STATUSES).default("قضية جديدة"),
 
