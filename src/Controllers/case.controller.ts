@@ -193,20 +193,21 @@ export async function assignLawyerToCase(req: AuthRequest, res: Response) {
         message: "لا يمكن تعيين مالك المكتب علي القضية",
       });
 
-    const { data: membership, error: membershipError } = await supabase
-      .from("office_members")
-      .select("id")
-      .eq("office_id", officeId)
-      .eq("lawyer_id", lawyerToAssign)
-      .single();
+    if (lawyerToAssign !== null) {
+      const { data: membership, error: membershipError } = await supabase
+        .from("office_members")
+        .select("id")
+        .eq("office_id", officeId)
+        .eq("lawyer_id", lawyerToAssign)
+        .single();
 
-    if (!membership || membershipError) {
-      return res.status(403).json({
-        success: false,
-        message: "هذا المحامي ليس عضواً في المكتب",
-      });
+      if (!membership || membershipError) {
+        return res.status(403).json({
+          success: false,
+          message: "هذا المحامي ليس عضواً في المكتب",
+        });
+      }
     }
-
     const { data: updatedCase, error: updateError } = await supabase
       .from("cases")
       .update({ assigned_lawyer_id: lawyerToAssign })
@@ -226,7 +227,12 @@ export async function assignLawyerToCase(req: AuthRequest, res: Response) {
 
     return res
       .status(200)
-      .json({ success: true, message: "تم تعيين المحامي علي القضية بنجاح" });
+      .json({
+        success: true,
+        message: !lawyerToAssign
+          ? "تم إلغاء تعيين المحامي بنجاح"
+          : "تم تعيين المحامي علي القضية بنجاح",
+      });
   } catch (error: any) {
     logger.error(`Error assigning lawyer to case: ${error.message}`);
     return res
