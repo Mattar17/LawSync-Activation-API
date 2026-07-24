@@ -336,18 +336,20 @@ export async function assignLawyerToTask(req: AuthRequest, res: Response) {
         message: "لا يمكن تعيين مالك المكتب علي المهمة",
       });
 
-    const { data: membership, error: membershipError } = await supabase
-      .from("office_members")
-      .select("id")
-      .eq("office_id", officeId)
-      .eq("lawyer_id", lawyerToAssign)
-      .single();
+    if (lawyerToAssign !== null) {
+      const { data: membership, error: membershipError } = await supabase
+        .from("office_members")
+        .select("id")
+        .eq("office_id", officeId)
+        .eq("lawyer_id", lawyerToAssign)
+        .single();
 
-    if (!membership || membershipError)
-      return res.status(403).json({
-        success: false,
-        message: "هذا المحامي ليس عضواً في المكتب",
-      });
+      if (!membership || membershipError)
+        return res.status(403).json({
+          success: false,
+          message: "هذا المحامي ليس عضواً في المكتب",
+        });
+    }
 
     const { data: updatedTask, error: updateError } = await supabase
       .from("tasks")
@@ -370,7 +372,9 @@ export async function assignLawyerToTask(req: AuthRequest, res: Response) {
 
     return res.status(200).json({
       success: true,
-      message: "تم تعيين المحامي علي المهمة بنجاح",
+      message: lawyerToAssign
+        ? "تم تعيين المحامي علي المهمة بنجاح"
+        : "تم إلغاء تعيين المحامي بنجاح",
     });
   } catch (error: any) {
     logger.error(`Error assigning lawyer to task: ${error.message}`);

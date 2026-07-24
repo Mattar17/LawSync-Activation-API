@@ -15,13 +15,6 @@ app.use(
   }),
 );
 
-// mongoose
-//   .connect(process.env.MONGO_URI!)
-//   .then(() => console.log("mongodDB Connected✅"))
-//   .catch((err) =>
-//     console.log(`${err} to ${process.env.MONGO_URI} mongodDB didn't connect☹`),
-//   );
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
