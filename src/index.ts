@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const app = express();
 import dotenv from "dotenv";
 dotenv.config();
-import router from "./router.js";
+import routes from "./routes/index.js";
 import cors from "cors";
 import "dotenv/config";
 import { handlePaymentWebhook } from "./Controllers/Payment.controller.js";
@@ -38,7 +38,7 @@ app.post("/reset-app-password", async (req: Request, res: Response) => {
 
 app.post("/api/payment/webhook", handlePaymentWebhook);
 
-app.use("/", router);
+app.use("/api", routes);
 
 app.listen(8000, () => {
   console.log("typescript + express api is running on :8000");

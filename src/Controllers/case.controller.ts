@@ -5,15 +5,8 @@ import {
   lawyerUpdateSchema,
   ownerUpdateSchema,
 } from "../ValidationSchemas/CaseUpdateSchema.js";
-import { success } from "zod";
+import type { AuthRequest } from "../types/AuthRequest.js";
 
-interface AuthRequest extends Request {
-  token?: {
-    admin?: boolean;
-    lawyer_token?: string;
-    lawyer_id?: string;
-  };
-}
 //POST /offices/:officeId/cases (owner only)
 export async function createCase(req: AuthRequest, res: Response) {
   try {
@@ -225,14 +218,12 @@ export async function assignLawyerToCase(req: AuthRequest, res: Response) {
         .status(404)
         .json({ success: false, message: "القضية غير موجود" });
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: !lawyerToAssign
-          ? "تم إلغاء تعيين المحامي بنجاح"
-          : "تم تعيين المحامي علي القضية بنجاح",
-      });
+    return res.status(200).json({
+      success: true,
+      message: !lawyerToAssign
+        ? "تم إلغاء تعيين المحامي بنجاح"
+        : "تم تعيين المحامي علي القضية بنجاح",
+    });
   } catch (error: any) {
     logger.error(`Error assigning lawyer to case: ${error.message}`);
     return res

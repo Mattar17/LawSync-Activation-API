@@ -3,14 +3,7 @@ import supabase from "../Services/supabaseClient.js";
 import { generateLawyerId } from "../utils/generateLawyerId.js";
 import bcrypt from "bcrypt";
 import logger from "../utils/logger.js";
-
-interface AuthRequest extends Request {
-  token?: {
-    admin?: boolean;
-    lawyer_token?: string;
-    lawyer_id?: string;
-  };
-}
+import type { AuthRequest } from "../types/AuthRequest.js";
 
 // 🔹 Helper: get lawyer by id
 export const getLawyerByIdHelper = async (id: string) => {

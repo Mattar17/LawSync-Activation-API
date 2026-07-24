@@ -1,14 +1,7 @@
 import type { Request, Response } from "express";
 import logger from "../utils/logger.js";
 import supabase from "../Services/supabaseClient.js";
-
-interface AuthRequest extends Request {
-  token?: {
-    admin?: boolean;
-    lawyer_token?: string;
-    lawyer_id?: string;
-  };
-}
+import type { AuthRequest } from "../types/AuthRequest.js";
 
 export async function CreateOffice(req: Request, res: Response) {
   try {

@@ -2,14 +2,7 @@ import type { Request, Response } from "express";
 import crypto from "crypto";
 import logger from "../utils/logger.js";
 import supabase from "../Services/supabaseClient.js";
-
-interface AuthRequest extends Request {
-  token?: {
-    admin?: boolean;
-    lawyer_token?: string;
-    lawyer_id?: string;
-  };
-}
+import type { AuthRequest } from "../types/AuthRequest.js";
 
 // POST /api/offices/:officeId/invites
 export async function CreateInvite(req: AuthRequest, res: Response) {
