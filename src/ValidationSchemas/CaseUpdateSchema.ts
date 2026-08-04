@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { CASE_STATUSES } from "./CaseSchema.js";
+import { CASE_STATUSES } from "../Models/Case.js";
 import { createCaseSchema } from "./CaseSchema.js";
+
 export const lawyerUpdateSchema = z
   .object({
     case_status: z.enum(CASE_STATUSES).optional(),

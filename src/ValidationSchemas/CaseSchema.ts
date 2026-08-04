@@ -1,36 +1,14 @@
 import { z } from "zod";
-
-export const CASE_STATUSES = [
-  "قضية جديدة",
-  "قيد المراجعة",
-  "تم رفع الدعوى",
-  "قيد النظر",
-  "انتظار الجلسة",
-  "تم تحديد جلسة",
-  "قيد التحقيق",
-  "انتظار الحكم",
-  "تم الاستئناف",
-  "تنفيذ الحكم",
-  "موقوفة",
-  "مغلقة",
-  "كسبت",
-  "خُسرت",
-  "تمت التسوية",
-  "رُفضت",
-  "تم التنازل عنها",
-] as const;
-
-export const PARTY_ROLES = [
-  "مدعي",
-  "مدعى عليه",
-  "مستأنف",
-  "مستأنف ضده",
-] as const;
+import {
+  CASE_STATUSES,
+  PARTY_ROLES,
+  CASE_TYPES,
+  CASE_DEGREES,
+  CLIENT_TYPES,
+} from "../Models/Case.js";
 
 export const createCaseSchema = z
   .object({
-    title: z.string().min(1, "عنوان القضية مطلوب"),
-
     description: z.string().optional(),
 
     case_number: z.string().min(1, "رقم القضية مطلوب"),
@@ -43,13 +21,17 @@ export const createCaseSchema = z
 
     client_role: z.enum(PARTY_ROLES, "صفة الموكل غير صحيحة"),
 
-    client_opponent_role: z.enum(PARTY_ROLES, "صفة الخصم غير صحيحة"),
-
     client_national_id: z.string().regex(/^\d{14}$/, "الرقم القومي غير صحيح"),
 
     client_opponent_national_id: z
       .string()
       .regex(/^\d{14}$/, "الرقم القومي غير صحيح"),
+
+    case_type: z.enum(CASE_TYPES).optional(),
+
+    case_degree: z.enum(CASE_DEGREES).optional(),
+
+    client_type: z.enum(CLIENT_TYPES).optional(),
 
     latest_court_session_date: z
       .string()
@@ -66,17 +48,3 @@ export const createCaseSchema = z
     latest_update: z.string().default("لم يتم العمل عليها بعد"),
   })
   .strict();
-// .superRefine((data, ctx) => {
-//   if (
-//     data.latest_court_session_date &&
-//     data.next_court_session_date &&
-//     new Date(data.latest_court_session_date) >
-//       new Date(data.next_court_session_date)
-//   ) {
-//     ctx.addIssue({
-//       code: z.ZodIssueCode.custom,
-//       path: ["next_court_session_date"],
-//       message: "آخر جلسة يجب أن تكون قبل الجلسة القادمة",
-//     });
-//   }
-// });

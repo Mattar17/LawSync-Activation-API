@@ -38,6 +38,7 @@ export async function createCase(req: AuthRequest, res: Response) {
     const caseData = {
       ...req.body,
       office_id: officeId,
+      title: `${req.body.client_name} ضد ${req.body.client_opponent_name}`,
     };
 
     const { data: createdCase, error: caseError } = await supabase

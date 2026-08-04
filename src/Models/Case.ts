@@ -20,14 +20,43 @@ export const CASE_STATUSES = [
 
 export type CaseStatus = (typeof CASE_STATUSES)[number];
 
-export const PARTY_ROLES = [
-  "مدعي",
-  "مدعى عليه",
-  "مستأنف",
-  "مستأنف ضده",
-] as const;
+export const PARTY_ROLES = ["مدعي", "مدعى عليه"] as const;
 
 export type PartyRole = (typeof PARTY_ROLES)[number];
+
+export const CASE_TYPES = [
+  "مدني",
+  "جنائي",
+  "تجاري",
+  "عمالي",
+  "أحوال شخصية",
+  "إداري",
+  "تنفيذ",
+  "تعويضات",
+  "إيجارات",
+  "اقتصادي",
+  "ضرائب",
+  "جمارك",
+] as const;
+
+export type CaseType = (typeof CASE_TYPES)[number];
+
+export const CASE_DEGREES = ["أول درجة", "استئناف", "نقض", "التماس"] as const;
+
+export type CaseDegree = (typeof CASE_DEGREES)[number];
+
+export const CLIENT_TYPES = [
+  "فرد",
+  "شركة تضامن",
+  "شركة توصية بسيطة",
+  "شركة مساهمة",
+  "شركة ذات مسؤولية محدودة",
+  "شركة الشخص الواحد",
+  "جهة حكومية",
+  "أخرى",
+] as const;
+
+export type ClientType = (typeof CLIENT_TYPES)[number];
 
 export interface Case {
   id: string;
@@ -43,10 +72,13 @@ export interface Case {
   client_opponent_name: string;
 
   client_role: PartyRole;
-  client_opponent_role: PartyRole;
 
   client_national_id: string;
   client_opponent_national_id: string;
+
+  case_type?: CaseType;
+  case_degree?: CaseDegree;
+  client_type?: ClientType;
 
   latest_court_session_date?: string;
   next_court_session_date?: string;
