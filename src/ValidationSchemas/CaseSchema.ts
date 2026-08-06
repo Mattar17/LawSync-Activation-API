@@ -43,6 +43,9 @@ export const createCaseSchema = z
       ),
     next_court_session_date: z.string().nullable().optional(),
 
+    court_name: z.string().optional(),
+    court_circuit: z.string().optional(),
+
     case_status: z.enum(CASE_STATUSES).default("قضية جديدة"),
 
     latest_update: z.string().default("لم يتم العمل عليها بعد"),

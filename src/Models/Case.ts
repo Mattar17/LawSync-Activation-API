@@ -83,6 +83,9 @@ export interface Case {
   latest_court_session_date?: string;
   next_court_session_date?: string;
 
+  court_name?: string;
+  court_circuit?: string;
+
   case_status: CaseStatus;
   latest_update: string;
 

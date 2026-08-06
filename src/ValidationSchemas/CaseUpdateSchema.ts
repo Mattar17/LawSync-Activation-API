@@ -18,6 +18,8 @@ export const lawyerUpdateSchema = z
       z.string().nullable(),
     ),
     latest_update: z.string().nullable().optional(),
+    court_name: z.string().optional(),
+    court_circuit: z.string().optional(),
   })
   .strict();
 
