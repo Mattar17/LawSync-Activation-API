@@ -2,7 +2,7 @@ import type { Request } from "express";
 
 interface IAuthRequest extends Request {
   token?: {
-    admin?: boolean;
+    is_admin?: boolean;
     lawyer_token?: string;
     lawyer_id?: string;
   };

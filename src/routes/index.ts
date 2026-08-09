@@ -12,6 +12,7 @@ import officeRoutes from "./offices.routes.js";
 import inviteRoutes from "./invites.routes.js";
 import caseRoutes from "./cases.routes.js";
 import taskRoutes from "./tasks.routes.js";
+import booksRoutes from "./books.routes.js";
 
 const router = express.Router();
 
@@ -33,5 +34,6 @@ router.use("/offices", officeRoutes);
 router.use(inviteRoutes);
 router.use(caseRoutes);
 router.use(taskRoutes);
+router.use(booksRoutes);
 
 export default router;

@@ -138,7 +138,7 @@ export const getLawyerByToken = async (req: AuthRequest, res: Response) => {
 // 🔹 CREATE LAWYER (ADMIN ONLY)
 export const createLawyer = async (req: AuthRequest, res: Response) => {
   try {
-    if (!req.token?.admin) {
+    if (!req.token?.is_admin) {
       return res.status(403).json({
         success: false,
         message: "Access denied, admin only",
@@ -233,7 +233,7 @@ export const updateLawyer = async (req: AuthRequest, res: Response) => {
 // 🔹 DELETE LAWYER (ADMIN ONLY)
 export const deleteLawyer = async (req: AuthRequest, res: Response) => {
   try {
-    if (!req.token?.admin) {
+    if (!req.token?.is_admin) {
       return res.status(403).json({
         success: false,
         message: "Access denied, admin only",

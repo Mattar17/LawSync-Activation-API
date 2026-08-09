@@ -8,19 +8,6 @@ export const Login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    // Admin login
-    if (
-      email === process.env.ADMIN_TOKEN &&
-      password === process.env.ADMIN_PASSWORD
-    ) {
-      const generatedToken = await generateToken({ admin: true });
-      logger.info(`Admin login successful`);
-      return res.status(200).json({ success: true, data: generatedToken });
-    }
-
-    // Lawyer login
-    logger.info(`Lawyer login attempt with email: ${email}`);
-
     const { data: lawyer, error } = await supabase
       .from("lawyers")
       .select()
@@ -28,7 +15,6 @@ export const Login = async (req: Request, res: Response) => {
       .single();
 
     if (error || !lawyer) {
-      logger.warn(`Lawyer not found for email: ${email}`);
       return res.status(404).json({
         success: false,
         message: "المستخدم غير موجود",
@@ -37,7 +23,6 @@ export const Login = async (req: Request, res: Response) => {
 
     const isMatch = await bcrypt.compare(password, lawyer.password_hash);
     if (!isMatch) {
-      logger.warn(`Invalid password attempt for email: ${email}`);
       return res.status(401).json({
         success: false,
         message: "كلمة المرور غير صحيحة",
@@ -47,6 +32,7 @@ export const Login = async (req: Request, res: Response) => {
     const generatedToken = await generateToken({
       lawyer_email: email,
       lawyer_id: lawyer.id,
+      is_admin: lawyer.is_admin,
     });
 
     const lawyerInfo = {
@@ -57,7 +43,6 @@ export const Login = async (req: Request, res: Response) => {
       pictureUrl: lawyer.picture_url,
     };
 
-    logger.info(`Lawyer login successful for email: ${email}`);
     return res.status(200).json({
       success: true,
       data: { token: generatedToken, user: lawyerInfo },
