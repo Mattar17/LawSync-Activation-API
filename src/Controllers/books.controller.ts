@@ -5,11 +5,70 @@ import logger from "../utils/logger.js";
 import supabase from "../Services/supabaseClient.js";
 import { type AuthRequest } from "../types/AuthRequest.js";
 
-interface IFileRequest extends AuthRequest {
-  file?: Express.Multer.File;
+export async function GetAllCategories(req: AuthRequest, res: Response) {
+  try {
+    const { data: categories, error } = await supabase
+      .from("categories")
+      .select("*")
+      .order("name", { ascending: true });
+
+    if (error) {
+      logger.error(`GetAllCategories: fetch failed: ${error.message}`);
+      return res
+        .status(500)
+        .json({ success: false, message: "حدث خطأ أثناء تحميل التصنيفات" });
+    }
+
+    return res.status(200).json({ success: true, data: categories });
+  } catch (err: any) {
+    logger.error(`GetAllCategories error: ${err.message}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "حدث خطأ في الخادم" });
+  }
 }
 
-export type FileRequest = IFileRequest;
+export async function CreateCategory(req: AuthRequest, res: Response) {
+  try {
+    if (!req.token?.is_admin) {
+      return res
+        .status(403)
+        .json({ success: false, message: "لا يمكنك إضافة تصنيف" });
+    }
+
+    const { name } = req.body;
+    if (!name || typeof name !== "string" || !name.trim()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "اسم التصنيف غير صحيح" });
+    }
+
+    const { data, error } = await supabase
+      .from("categories")
+      .insert({ name: name.trim() })
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === "23505") {
+        return res
+          .status(409)
+          .json({ success: false, message: "هذا التصنيف موجود بالفعل" });
+      }
+      logger.error(`error creating category: ${error.message}`);
+      return res
+        .status(500)
+        .json({ success: false, message: "حدث خطأ أثناء إنشاء التصنيف" });
+    }
+
+    return res.status(200).json({ success: true, category: data });
+  } catch (err: any) {
+    logger.error(`error creating category: ${err.message}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "حدث خطأ أثناء إنشاء التصنيف" });
+  }
+}
 
 export async function UploadBook(req: AuthRequest, res: Response) {
   try {
@@ -141,10 +200,249 @@ export async function GetAllBooksInCategory(req: AuthRequest, res: Response) {
 }
 
 export async function GetFileUrl(req: AuthRequest, res: Response) {
-  let { filePath } = req.body;
-  const { data } = await supabase.storage
-    .from("books")
-    .createSignedUrl(filePath, 60 * 5);
+  try {
+    const { filePath } = req.body;
 
-  return res.json(data);
+    if (!filePath || typeof filePath !== "string") {
+      return res.status(400).json({ error: "filePath is required" });
+    }
+
+    const { data, error } = await supabase.storage
+      .from("books")
+      .createSignedUrl(filePath, 60 * 5);
+
+    if (error) {
+      logger.error("GetFileUrl: failed to create signed URL", {
+        filePath,
+        message: error.message,
+      });
+      return res.status(404).json({ error: "File not found or inaccessible" });
+    }
+
+    return res.json(data);
+  } catch (err) {
+    logger.error("GetFileUrl: unexpected error", {
+      filePath: req.body?.filePath,
+      error: err instanceof Error ? err.message : err,
+    });
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+export async function DeleteCategory(req: AuthRequest, res: Response) {
+  try {
+    if (!req.token?.is_admin) {
+      return res
+        .status(403)
+        .json({ success: false, message: "لا يمكنك حذف التصنيف" });
+    }
+
+    const { categoryId } = req.params;
+    if (!categoryId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "معرف التصنيف مطلوب" });
+    }
+
+    const { data: fetchedCategory, error: catError } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("id", categoryId)
+      .single();
+
+    if (!fetchedCategory || catError)
+      return res
+        .status(404)
+        .json({ success: false, message: "التصنيف غير موجود" });
+
+    const { error } = await supabase
+      .from("categories")
+      .delete()
+      .eq("id", categoryId);
+
+    if (error) {
+      // FK violation: books still reference this category
+      if (error.code === "23503") {
+        return res.status(409).json({
+          success: false,
+          message: "لا يمكن حذف التصنيف لوجود كتب مرتبطة به",
+        });
+      }
+      logger.error(`error deleting category: ${error.message}`);
+      return res
+        .status(500)
+        .json({ success: false, message: "حدث خطأ أثناء حذف التصنيف" });
+    }
+
+    return res.status(200).json({ success: true, message: "تم حذف التصنيف" });
+  } catch (err: any) {
+    logger.error(`DeleteCategory error: ${err.message}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "حدث خطأ في الخادم" });
+  }
+}
+
+export async function DeleteBook(req: AuthRequest, res: Response) {
+  try {
+    if (!req.token?.is_admin) {
+      return res
+        .status(403)
+        .json({ success: false, message: "لا يمكنك حذف الكتاب" });
+    }
+
+    const { bookId } = req.params;
+    if (!bookId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "معرف الكتاب مطلوب" });
+    }
+
+    const { data: book, error: fetchError } = await supabase
+      .from("books")
+      .select("id, storage_path")
+      .eq("id", bookId)
+      .single();
+
+    if (!book || fetchError)
+      return res
+        .status(404)
+        .json({ success: false, message: "الكتاب غير موجود" });
+
+    const { error: storageError } = await supabase.storage
+      .from("books")
+      .remove([book.storage_path]);
+
+    if (storageError) {
+      logger.error(
+        `DeleteBook: failed to remove file from storage: ${storageError.message}`,
+        { bookId, storagePath: book.storage_path },
+      );
+      return res
+        .status(500)
+        .json({ success: false, message: "حدث خطأ أثناء حذف الملف" });
+    }
+
+    const { error: deleteError } = await supabase
+      .from("books")
+      .delete()
+      .eq("id", bookId);
+
+    if (deleteError) {
+      // File is already gone from storage but the row remains — flag loudly, this is an inconsistent state
+      logger.error(
+        `DeleteBook: file removed from storage but DB delete failed (orphaned row): ${deleteError.message}`,
+        { bookId, storagePath: book.storage_path },
+      );
+      return res
+        .status(500)
+        .json({ success: false, message: "حدث خطأ أثناء حذف بيانات الكتاب" });
+    }
+
+    return res.status(200).json({ success: true, message: "تم حذف الكتاب" });
+  } catch (err: any) {
+    logger.error(`DeleteBook error: ${err.message}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "حدث خطأ في الخادم" });
+  }
+}
+
+export async function UpdateBookInfo(req: AuthRequest, res: Response) {
+  try {
+    if (!req.token?.is_admin) {
+      return res
+        .status(403)
+        .json({ success: false, message: "لا يمكنك تعديل بيانات الكتاب" });
+    }
+
+    const { bookId } = req.params;
+    if (!bookId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "معرف الكتاب مطلوب" });
+    }
+
+    const { title, description, category } = req.body;
+
+    if (
+      title === undefined &&
+      description === undefined &&
+      category === undefined
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "لا يوجد بيانات لتحديثها" });
+    }
+
+    if (title !== undefined && (typeof title !== "string" || !title.trim())) {
+      return res
+        .status(400)
+        .json({ success: false, message: "عنوان الكتاب غير صحيح" });
+    }
+
+    if (description !== undefined && typeof description !== "string") {
+      return res
+        .status(400)
+        .json({ success: false, message: "الوصف غير صحيح" });
+    }
+
+    const updatePayload: Record<string, any> = {};
+    if (title !== undefined) updatePayload.title = title.trim();
+    if (description !== undefined) updatePayload.description = description;
+
+    if (category !== undefined) {
+      if (typeof category !== "string" || !category.trim()) {
+        return res
+          .status(400)
+          .json({ success: false, message: "التصنيف غير صحيح" });
+      }
+
+      const { data: fetchedCategory, error: catError } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("name", category)
+        .single();
+
+      if (!fetchedCategory || catError)
+        return res
+          .status(404)
+          .json({ success: false, message: "التصنيف غير صحيح أو تم حذفه" });
+
+      updatePayload.category_id = fetchedCategory.id;
+    }
+
+    const { data: updatedBook, error } = await supabase
+      .from("books")
+      .update(updatePayload)
+      .eq("id", bookId)
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        // no row matched the filter
+        return res
+          .status(404)
+          .json({ success: false, message: "الكتاب غير موجود" });
+      }
+      logger.error(`UpdateBookInfo: update failed: ${error.message}`, {
+        bookId,
+      });
+      return res
+        .status(500)
+        .json({ success: false, message: "حدث خطأ أثناء تحديث بيانات الكتاب" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "تم تحديث بيانات الكتاب",
+      book: updatedBook,
+    });
+  } catch (err: any) {
+    logger.error(`UpdateBookInfo error: ${err.message}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "حدث خطأ في الخادم" });
+  }
 }

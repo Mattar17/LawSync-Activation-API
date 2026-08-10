@@ -1,18 +1,22 @@
 import express from "express";
 import verifyToken from "../middlewares/verifyToken.js";
 import adminOnly from "../middlewares/adminOnly.js";
-import CreateCategory from "../Controllers/CreateBooksCategory.js";
 import {
   GetAllBooksInCategory,
   GetFileUrl,
   UploadBook,
-  type FileRequest,
+  CreateCategory,
+  DeleteCategory,
+  DeleteBook,
+  UpdateBookInfo,
+  GetAllCategories,
 } from "../Controllers/books.controller.js";
 import { UploadFile } from "../Services/UploadFile.js";
 
 const router = express.Router();
 
 router.post("/books/category", verifyToken, adminOnly, CreateCategory);
+router.get("/books/category", verifyToken, adminOnly, GetAllCategories);
 router.post(
   "/books/upload",
   verifyToken,
@@ -22,4 +26,12 @@ router.post(
 );
 router.get("/books/:categoryId", verifyToken, adminOnly, GetAllBooksInCategory);
 router.get("/books", verifyToken, adminOnly, GetFileUrl);
+router.delete(
+  "/books/category/:categoryId",
+  verifyToken,
+  adminOnly,
+  DeleteCategory,
+);
+router.delete("/books/:bookId", verifyToken, adminOnly, DeleteBook);
+router.patch("/books/:booksId", verifyToken, adminOnly, UpdateBookInfo);
 export default router;
