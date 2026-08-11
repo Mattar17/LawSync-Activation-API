@@ -72,7 +72,7 @@ export async function CreateCategory(req: AuthRequest, res: Response) {
 
 export async function UploadBook(req: AuthRequest, res: Response) {
   try {
-    const { title, description, category } = req.body;
+    const { title, description, categoryId } = req.body;
 
     if (!title || typeof title !== "string") {
       return res
@@ -80,7 +80,7 @@ export async function UploadBook(req: AuthRequest, res: Response) {
         .json({ success: false, message: "عنوان الكتاب مطلوب" });
     }
 
-    if (!category || typeof category !== "string") {
+    if (!categoryId || typeof categoryId !== "string") {
       return res.status(400).json({ success: false, message: "التصنيف مطلوب" });
     }
 
@@ -92,7 +92,7 @@ export async function UploadBook(req: AuthRequest, res: Response) {
     const { data: fetchedCategory, error: catError } = await supabase
       .from("categories")
       .select("id,name")
-      .eq("name", category)
+      .eq("id", categoryId)
       .single();
 
     if (!fetchedCategory || catError)
@@ -201,12 +201,21 @@ export async function GetAllBooksInCategory(req: AuthRequest, res: Response) {
 
 export async function GetFileUrl(req: AuthRequest, res: Response) {
   try {
-    const { filePath } = req.body;
+    const { bookId } = req.params;
 
-    if (!filePath || typeof filePath !== "string") {
-      return res.status(400).json({ error: "filePath is required" });
+    const { data: book, error: fetchError } = await supabase
+      .from("books")
+      .select("storage_path")
+      .eq("id", bookId)
+      .single();
+
+    if (!book || fetchError) {
+      return res
+        .status(404)
+        .json({ success: false, message: "الكتاب غير موجود!" });
     }
 
+    const filePath = book.storage_path;
     const { data, error } = await supabase.storage
       .from("books")
       .createSignedUrl(filePath, 60 * 5);
@@ -219,7 +228,9 @@ export async function GetFileUrl(req: AuthRequest, res: Response) {
       return res.status(404).json({ error: "File not found or inaccessible" });
     }
 
-    return res.json(data);
+    return res
+      .status(200)
+      .json({ success: true, data: { url: data.signedUrl } });
   } catch (err) {
     logger.error("GetFileUrl: unexpected error", {
       filePath: req.body?.filePath,
@@ -363,12 +374,12 @@ export async function UpdateBookInfo(req: AuthRequest, res: Response) {
         .json({ success: false, message: "معرف الكتاب مطلوب" });
     }
 
-    const { title, description, category } = req.body;
+    const { title, description, categoryId } = req.body;
 
     if (
       title === undefined &&
       description === undefined &&
-      category === undefined
+      categoryId === undefined
     ) {
       return res
         .status(400)
@@ -391,8 +402,8 @@ export async function UpdateBookInfo(req: AuthRequest, res: Response) {
     if (title !== undefined) updatePayload.title = title.trim();
     if (description !== undefined) updatePayload.description = description;
 
-    if (category !== undefined) {
-      if (typeof category !== "string" || !category.trim()) {
+    if (categoryId !== undefined) {
+      if (typeof categoryId !== "string" || !categoryId.trim()) {
         return res
           .status(400)
           .json({ success: false, message: "التصنيف غير صحيح" });
@@ -401,7 +412,7 @@ export async function UpdateBookInfo(req: AuthRequest, res: Response) {
       const { data: fetchedCategory, error: catError } = await supabase
         .from("categories")
         .select("id")
-        .eq("name", category)
+        .eq("id", categoryId)
         .single();
 
       if (!fetchedCategory || catError)

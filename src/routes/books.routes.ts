@@ -24,8 +24,13 @@ router.post(
   UploadFile.single("file"),
   UploadBook,
 );
-router.get("/books/:categoryId", verifyToken, adminOnly, GetAllBooksInCategory);
-router.get("/books", verifyToken, adminOnly, GetFileUrl);
+router.get(
+  "/books/category/:categoryId",
+  verifyToken,
+  adminOnly,
+  GetAllBooksInCategory,
+);
+router.get("/books/:bookId", verifyToken, adminOnly, GetFileUrl);
 router.delete(
   "/books/category/:categoryId",
   verifyToken,
@@ -33,5 +38,5 @@ router.delete(
   DeleteCategory,
 );
 router.delete("/books/:bookId", verifyToken, adminOnly, DeleteBook);
-router.patch("/books/:booksId", verifyToken, adminOnly, UpdateBookInfo);
+router.patch("/books/:bookId", verifyToken, adminOnly, UpdateBookInfo);
 export default router;
