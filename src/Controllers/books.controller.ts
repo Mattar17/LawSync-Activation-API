@@ -43,7 +43,7 @@ export async function CreateCategory(req: AuthRequest, res: Response) {
         .json({ success: false, message: "اسم التصنيف غير صحيح" });
     }
 
-    const { data, error } = await supabase
+    const { data: insertedCategory, error } = await supabase
       .from("categories")
       .insert({ name: name.trim() })
       .select()
@@ -61,7 +61,7 @@ export async function CreateCategory(req: AuthRequest, res: Response) {
         .json({ success: false, message: "حدث خطأ أثناء إنشاء التصنيف" });
     }
 
-    return res.status(200).json({ success: true, category: data });
+    return res.status(200).json({ success: true, data: insertedCategory });
   } catch (err: any) {
     logger.error(`error creating category: ${err.message}`);
     return res
@@ -148,9 +148,11 @@ export async function UploadBook(req: AuthRequest, res: Response) {
         .json({ success: false, message: "حدث خطأ أثناء حفظ بيانات الكتاب" });
     }
 
-    return res
-      .status(200)
-      .json({ success: true, message: "تم رفع الكتاب بنجاح" });
+    return res.status(200).json({
+      success: true,
+      data: insertedBook,
+      message: "تم رفع الكتاب بنجاح",
+    });
   } catch (err: any) {
     logger.error(`UploadBookController error: ${err.message}`);
     return res

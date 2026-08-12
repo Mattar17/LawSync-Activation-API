@@ -41,6 +41,7 @@ export const Login = async (req: Request, res: Response) => {
       bio: lawyer.bio,
       email: lawyer.email,
       pictureUrl: lawyer.picture_url,
+      isAdmin: lawyer.is_admin,
     };
 
     return res.status(200).json({
