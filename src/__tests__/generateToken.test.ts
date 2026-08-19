@@ -29,14 +29,14 @@ describe("generate token", () => {
 
   it("should throw an error if JWT_SECRET is missing", () => {
     delete process.env.JWT_SECRET;
-    expect(generateToken(mockPayload)).rejects.toThrow(
-      "cannot generate jwt token",
+    expect(() => generateToken(mockPayload)).toThrow(
+      new Error("cannot generate jwt token"),
     );
   });
 
   it("should thorw an error if JWT_SECRET is empty string", () => {
     process.env.JWT_SECRET = "";
-    expect(generateToken(mockPayload)).rejects.toThrow(
+    expect(() => generateToken(mockPayload)).toThrow(
       "cannot generate jwt token",
     );
   });

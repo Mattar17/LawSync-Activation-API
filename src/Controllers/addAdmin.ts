@@ -21,7 +21,6 @@ export default async function AddAdmin(req: Request, res: Response) {
       .select("id,is_admin")
       .eq("email", email)
       .single();
-    console.log(lawyer);
     if (!lawyer || error) {
       logger.error(error.message);
       return res.status(404).json({
