@@ -3,3 +3,5 @@
 /dist
 config.bat
 /coverage
+.env.* 
+.env
