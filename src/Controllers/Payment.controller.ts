@@ -1,9 +1,8 @@
 import type { Request, Response } from "express";
-import CreateIntention from "../Services/CreatePaymentIntention.js";
-import supabase from "../Services/supabaseClient.js";
-import logger from "../utils/logger.js";
+import CreateIntention from "@/Services/CreatePaymentIntention.js";
+import supabase from "@/Services/supabaseClient.js";
+import logger from "@/utils/logger.js";
 import crypto from "crypto";
-import { lookup } from "dns";
 
 function calculateHMAC(data: any) {
   const safe = (v: any) => (v === undefined || v === null ? "" : v);

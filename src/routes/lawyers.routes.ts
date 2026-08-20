@@ -1,10 +1,10 @@
 import express from "express";
 
-import verifyToken from "../middlewares/verifyToken.js";
-import AdminOnly from "../middlewares/adminOnly.js";
-import { UploadImage } from "../Services/UploadImage.js";
+import verifyToken from "@/middlewares/verifyToken.js";
+import AdminOnly from "@/middlewares/adminOnly.js";
+import { UploadImage } from "@/Services/UploadImage.js";
 
-import * as LawyerController from "../Controllers/lawyers.controller.js";
+import * as LawyerController from "@/Controllers/lawyers.controller.js";
 
 const router = express.Router();
 

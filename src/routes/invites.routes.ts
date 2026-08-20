@@ -1,7 +1,7 @@
 import express from "express";
 
-import verifyToken from "../middlewares/verifyToken.js";
-import * as InvitesController from "../Controllers/invites.controller.js";
+import verifyToken from "@/middlewares/verifyToken.js";
+import * as InvitesController from "@/Controllers/invites.controller.js";
 
 const router = express.Router();
 

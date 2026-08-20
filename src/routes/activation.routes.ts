@@ -1,9 +1,9 @@
 import express from "express";
 import { rateLimit } from "express-rate-limit";
 
-import ValidateLicense from "../Controllers/ValidateLicense.js";
-import ActivateLicense from "../Controllers/ActivateLicense.js";
-import StartTrial from "../Controllers/StartTrial.js";
+import ValidateLicense from "@/Controllers/ValidateLicense.js";
+import ActivateLicense from "@/Controllers/ActivateLicense.js";
+import StartTrial from "@/Controllers/StartTrial.js";
 
 const router = express.Router();
 

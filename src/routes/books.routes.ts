@@ -1,6 +1,6 @@
 import express from "express";
-import verifyToken from "../middlewares/verifyToken.js";
-import adminOnly from "../middlewares/adminOnly.js";
+import verifyToken from "@/middlewares/verifyToken.js";
+import adminOnly from "@/middlewares/adminOnly.js";
 import {
   GetAllBooksInCategory,
   GetFileUrl,
@@ -10,8 +10,8 @@ import {
   DeleteBook,
   UpdateBookInfo,
   GetAllCategories,
-} from "../Controllers/books.controller.js";
-import { UploadFile } from "../Services/UploadFile.js";
+} from "@/Controllers/books.controller.js";
+import { UploadFile } from "@/Services/UploadFile.js";
 
 const router = express.Router();
 
