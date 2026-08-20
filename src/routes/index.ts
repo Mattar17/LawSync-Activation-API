@@ -1,18 +1,18 @@
 import express from "express";
 
-import APIKeyValidation from "../middlewares/APIKeyValidator.js";
-import { requestLogger } from "../middlewares/requestLogger.js";
+import APIKeyValidation from "@/middlewares/APIKeyValidator.js";
+import { requestLogger } from "@/middlewares/requestLogger.js";
 
-import paymentRoutes from "./payment.routes.js";
-import activationRoutes from "./activation.routes.js";
-import analyticsRoutes from "./analytics.routes.js";
-import authRoutes from "./auth.routes.js";
-import lawyerRoutes from "./lawyers.routes.js";
-import officeRoutes from "./offices.routes.js";
-import inviteRoutes from "./invites.routes.js";
-import caseRoutes from "./cases.routes.js";
-import taskRoutes from "./tasks.routes.js";
-import booksRoutes from "./books.routes.js";
+import paymentRoutes from "@/routes/payment.routes.js";
+import activationRoutes from "@/routes/activation.routes.js";
+import analyticsRoutes from "@/routes/analytics.routes.js";
+import authRoutes from "@/routes/auth.routes.js";
+import lawyerRoutes from "@/routes/lawyers.routes.js";
+import officeRoutes from "@/routes/offices.routes.js";
+import inviteRoutes from "@/routes/invites.routes.js";
+import caseRoutes from "@/routes/cases.routes.js";
+import taskRoutes from "@/routes/tasks.routes.js";
+import booksRoutes from "@/routes/books.routes.js";
 
 const router = express.Router();
 

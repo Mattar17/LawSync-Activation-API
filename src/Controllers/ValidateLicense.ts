@@ -1,7 +1,7 @@
-import signLicense from "../Services/signLicense.js";
+import signLicense from "@/Services/signLicense.js";
 import { type Request, type Response } from "express";
-import logger from "../utils/logger.js";
-import supabase from "../Services/supabaseClient.js";
+import logger from "@/utils/logger.js";
+import supabase from "@/Services/supabaseClient.js";
 
 export default async function ValidateLicense(
   req: Request,

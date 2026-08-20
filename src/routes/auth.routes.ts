@@ -1,9 +1,9 @@
 import express from "express";
 
-import { Login } from "../Controllers/Login.js";
-import Register from "../Controllers/Register.js";
-import AccessPortal from "../Controllers/AccessPortal.js";
-import AddAdmin from "../Controllers/addAdmin.js";
+import { Login } from "@/Controllers/Login.js";
+import Register from "@/Controllers/Register.js";
+import AccessPortal from "@/Controllers/AccessPortal.js";
+import AddAdmin from "@/Controllers/addAdmin.js";
 
 const router = express.Router();
 

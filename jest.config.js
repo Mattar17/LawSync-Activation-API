@@ -2,6 +2,7 @@
 export default {
   preset: "ts-jest/presets/default-esm",
   testEnvironment: "node",
+  setupFiles: ["<rootDir>/src/__tests__/setup.ts"],
 
   extensionsToTreatAsEsm: [".ts"],
 
