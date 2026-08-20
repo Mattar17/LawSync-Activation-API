@@ -1,7 +1,7 @@
 import express from "express";
 
-import verifyToken from "../middlewares/verifyToken.js";
-import * as OfficesController from "../Controllers/office.controller.js";
+import verifyToken from "@/middlewares/verifyToken.js";
+import * as OfficesController from "@/Controllers/office.controller.js";
 
 const router = express.Router();
 

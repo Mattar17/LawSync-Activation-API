@@ -1,11 +1,11 @@
 import express from "express";
 
-import verifyToken from "../middlewares/verifyToken.js";
-import validateRequestBody from "../middlewares/validateRequestBody.js";
+import verifyToken from "@/middlewares/verifyToken.js";
+import validateRequestBody from "@/middlewares/validateRequestBody.js";
 
-import { createCaseSchema } from "../ValidationSchemas/CaseSchema.js";
+import { createCaseSchema } from "@/ValidationSchemas/CaseSchema.js";
 
-import * as CasesController from "../Controllers/case.controller.js";
+import * as CasesController from "@/Controllers/case.controller.js";
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { PaymentIntention } from "../Controllers/Payment.controller.js";
+import { PaymentIntention } from "@/Controllers/Payment.controller.js";
 
 const router = express.Router();
 

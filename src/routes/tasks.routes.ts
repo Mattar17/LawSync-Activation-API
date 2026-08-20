@@ -1,8 +1,8 @@
 import express from "express";
 
-import verifyToken from "../middlewares/verifyToken.js";
+import verifyToken from "@/middlewares/verifyToken.js";
 
-import * as TasksController from "../Controllers/tasks.controller.js";
+import * as TasksController from "@/Controllers/tasks.controller.js";
 
 const router = express.Router();
 
