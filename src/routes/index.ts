@@ -14,6 +14,8 @@ import caseRoutes from "./cases.routes.js";
 import taskRoutes from "./tasks.routes.js";
 import booksRoutes from "./books.routes.js";
 import clientRoutes from "./clients.routes.js";
+import adminRoutes from "./admin.routes.js"
+
 
 const router = express.Router();
 
@@ -31,6 +33,7 @@ router.use(authRoutes);
 
 router.use("/lawyers", lawyerRoutes);
 router.use("/offices", officeRoutes);
+router.use("/admin",adminRoutes)
 
 router.use(inviteRoutes);
 router.use(caseRoutes);

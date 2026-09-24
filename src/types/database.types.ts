@@ -368,6 +368,7 @@ export type Database = {
           email: string
           id: string
           is_admin: boolean
+          is_verified: boolean
           name: string
           password_hash: string
           phone: string | null
@@ -380,6 +381,7 @@ export type Database = {
           email: string
           id?: string
           is_admin?: boolean
+          is_verified?: boolean
           name: string
           password_hash: string
           phone?: string | null
@@ -392,6 +394,7 @@ export type Database = {
           email?: string
           id?: string
           is_admin?: boolean
+          is_verified?: boolean
           name?: string
           password_hash?: string
           phone?: string | null
@@ -665,6 +668,44 @@ export type Database = {
           },
         ]
       }
+      verification_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          lawyer_card_path: string
+          lawyer_id: string
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["verification_statuses"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          lawyer_card_path: string
+          lawyer_id: string
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["verification_statuses"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          lawyer_card_path?: string
+          lawyer_id?: string
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["verification_statuses"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_requests_lawyer_id_fkey"
+            columns: ["lawyer_id"]
+            isOneToOne: false
+            referencedRelation: "lawyers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -743,6 +784,7 @@ export type Database = {
         | "قنا"
         | "شمال سيناء"
         | "سوهاج"
+      verification_statuses: "pending" | "accepted" | "rejected" | "canceled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -944,6 +986,7 @@ export const Constants = {
         "شمال سيناء",
         "سوهاج",
       ],
+      verification_statuses: ["pending", "accepted", "rejected", "canceled"],
     },
   },
 } as const

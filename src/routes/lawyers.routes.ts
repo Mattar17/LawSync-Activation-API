@@ -5,10 +5,12 @@ import AdminOnly from "../middlewares/adminOnly.js";
 import { UploadImage } from "../Services/UploadImage.js";
 
 import * as LawyerController from "../Controllers/lawyers.controller.js";
+import { UploadFile } from "../Services/UploadFile.js";
 
 const router = express.Router();
 
 router.get("/admin", verifyToken, LawyerController.getAllLawyersAdmin);
+router.get("/verification_status", verifyToken, LawyerController.getVerificationStatus);
 router.get("/", LawyerController.getAllLawyersPublic);
 router.get("/id/:id", LawyerController.getLawyerById);
 
@@ -29,5 +31,7 @@ router.post(
   UploadImage.single("file"),
   LawyerController.setProfilePicture,
 );
+
+router.post("/verification_request",verifyToken,UploadFile.single("file"),LawyerController.verificationRequest)
 
 export default router;

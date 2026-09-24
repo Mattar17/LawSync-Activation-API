@@ -2,7 +2,9 @@ import { type Request, type Response } from "express";
 import supabase from "../Services/supabaseClient.js";
 import bcrypt from "bcrypt";
 import logger from "../utils/logger.js";
-import type { AuthRequest } from "../types/AuthRequest.js";
+import type { AuthRequest, IAuthRequest } from "../types/AuthRequest.js";
+import crypto from "node:crypto"
+import fs from "node:fs"
 
 // 🔹 Helper: get lawyer by id
 export const getLawyerByIdHelper = async (id: string) => {
@@ -353,3 +355,117 @@ export const setProfilePicture = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const verificationRequest = async (req:IAuthRequest,res:Response)=>{
+  const lawyer_card = req.file;
+  try{
+    const lawyerId = req.token?.lawyer_id;
+
+    if (!lawyerId) return res.status(401).json({success:false,message:"unauthorized"});
+
+    // Check if the lawyer is already verified
+    const { data: lawyer, error: lawyerError } = await supabase
+      .from("lawyers")
+      .select("is_verified")
+      .eq("id", lawyerId)
+      .maybeSingle();
+
+    if (lawyerError) throw Error(lawyerError.message);
+
+    if (!lawyer) {
+      return res.status(404).json({ success: false, message: "المحامي غير موجود" });
+    }
+
+    if (lawyer.is_verified) {
+      return res.status(400).json({ success: false, message: "الحساب موثق بالفعل" });
+    }
+
+    //Check if lawyer has a pending request 
+    const {data:pendingRequest,error:fetchError} = await supabase
+    .from("verification_requests")
+    .select("id")
+    .eq("lawyer_id",lawyerId)
+    .eq("status",'pending')
+    .maybeSingle()
+
+    if(fetchError) throw Error(fetchError.message)
+
+    if (pendingRequest) return res.status(409).json({success:false,message:"لديك طلب معلق بالفعل"})
+
+    if (!lawyer_card) return res.status(400).json({success:false,message:"يجب إرفاق صورة لإثبات الهوية"})
+
+    const fileId = crypto.randomBytes(16).toString("hex"); 
+    const fileExt = lawyer_card.originalname.split(".").pop() || "jpg";
+    const fileBuffer = fs.readFileSync(lawyer_card.path)
+
+    const {data:uploadedFile,error:uploadError} = await supabase.storage
+    .from("verification_requests")
+    .upload(`${fileId}.${fileExt}`,fileBuffer,{
+      contentType:lawyer_card.mimetype,
+      upsert:false
+    })  
+
+    if(uploadError){
+      logger.error(`[LAWYER CARD UPLOAD] ${uploadError.message}`)
+      throw Error("خطأ أثناء تقديم الطلب")
+    }
+
+    const {error:insertError} = await supabase
+    .from("verification_requests")
+    .insert({lawyer_id:lawyerId,lawyer_card_path:uploadedFile.path})
+
+    if(insertError) {
+      logger.error(`[VERIFICATION REQUEST INSERT RECORD] ${insertError.message}`)
+      await supabase.storage.from("verification_requests").remove([uploadedFile.path])
+      throw Error("حدث خطأ أثناء إنشاء الطلب")
+    }
+
+    return res.status(201).json({success:true,message:"تم إرسال طلبك بنجاح"})  
+  }catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return res.status(500).json({
+      success: false,
+      message: message,
+    });
+  }
+  finally {
+    if (lawyer_card?.path && fs.existsSync(lawyer_card.path)) {
+      try {
+        fs.unlinkSync(lawyer_card.path);
+      } catch (cleanupErr) {
+        logger.error(`[TEMP FILE CLEANUP FAILED] ${cleanupErr}`);
+      }
+    }
+  }
+};
+
+export const getVerificationStatus = async (req: IAuthRequest, res: Response) => {
+  try {
+    const lawyerId = req.token?.lawyer_id;
+    if (!lawyerId) return res.status(401).json({ success: false, message: "unauthorized" });
+
+    const { data: pendingRequest, error: fetchError } = await supabase
+      .from("verification_requests")
+      .select("id")
+      .eq("lawyer_id", lawyerId)
+      .eq("status", "pending")
+      .maybeSingle();
+
+    if (fetchError) throw Error(fetchError.message);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        hasPendingRequest: Boolean(pendingRequest),
+      },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return res.status(500).json({
+      success: false,
+      message,
+    });
+  }
+};
+
+

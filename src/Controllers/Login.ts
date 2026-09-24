@@ -26,7 +26,7 @@ export const Login = async (req: Request, res: Response) => {
 
     const { data: lawyer, error: dbError } = await supabase
       .from("lawyers")
-      .select("id, name, bio, email, picture_url, is_admin, password_hash")
+      .select("id, name, bio, email, picture_url, is_admin, password_hash,is_verified")
       .eq("email", normalizedEmail)
       .maybeSingle();
 
@@ -81,6 +81,7 @@ export const Login = async (req: Request, res: Response) => {
       email: lawyer.email,
       pictureUrl: lawyer.picture_url,
       isAdmin: lawyer.is_admin,
+      isVerified:lawyer.is_verified
     };
 
     if (isMobile) {
