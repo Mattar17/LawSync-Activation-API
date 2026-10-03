@@ -11,6 +11,7 @@ const router = express.Router();
 
 router.get("/admin", verifyToken, LawyerController.getAllLawyersAdmin);
 router.get("/verification_status", verifyToken, LawyerController.getVerificationStatus);
+router.get("/subscription_status", verifyToken, LawyerController.getSubscriptionStatus);
 router.get("/", LawyerController.getAllLawyersPublic);
 router.get("/id/:id", LawyerController.getLawyerById);
 
@@ -33,5 +34,11 @@ router.post(
 );
 
 router.post("/verification_request",verifyToken,UploadFile.single("file"),LawyerController.verificationRequest)
+router.post(
+  "/subscription_request",
+  verifyToken,
+  UploadFile.single("file"),
+  LawyerController.sendSubcriptionRequest,
+);
 
 export default router;

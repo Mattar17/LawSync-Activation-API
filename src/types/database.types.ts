@@ -516,6 +516,91 @@ export type Database = {
           },
         ]
       }
+      subscription_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          invoice_path: string
+          lawyer_id: string
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["verification_statuses"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          invoice_path: string
+          lawyer_id: string
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["verification_statuses"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          invoice_path?: string
+          lawyer_id?: string
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["verification_statuses"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_requests_lawyer_id_fkey"
+            columns: ["lawyer_id"]
+            isOneToOne: false
+            referencedRelation: "lawyers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          created_at: string | null
+          current_period_end: string
+          current_period_start: string
+          gateway: string | null
+          gateway_customer_id: string | null
+          gateway_subscription_id: string | null
+          id: string
+          lawyer_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_period_end: string
+          current_period_start: string
+          gateway?: string | null
+          gateway_customer_id?: string | null
+          gateway_subscription_id?: string | null
+          id?: string
+          lawyer_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_period_end?: string
+          current_period_start?: string
+          gateway?: string | null
+          gateway_customer_id?: string | null
+          gateway_subscription_id?: string | null
+          id?: string
+          lawyer_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_lawyer_id_fkey"
+            columns: ["lawyer_id"]
+            isOneToOne: false
+            referencedRelation: "lawyers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_lawyer_id: string | null

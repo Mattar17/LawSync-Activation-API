@@ -468,4 +468,130 @@ export const getVerificationStatus = async (req: IAuthRequest, res: Response) =>
   }
 };
 
+export const sendSubscriptionRequest = async (req: IAuthRequest, res: Response) => {
+  const invoice = req.file;
+  try {
+    const lawyerId = req.token?.lawyer_id;
+
+    if (!lawyerId) return res.status(401).json({ success: false, message: "unauthorized" });
+
+    // Check if the lawyer exists
+    const { data: lawyer, error: lawyerError } = await supabase
+      .from("lawyers")
+      .select("id")
+      .eq("id", lawyerId)
+      .maybeSingle();
+
+    if (lawyerError) throw Error(lawyerError.message);
+
+    if (!lawyer) {
+      return res.status(404).json({ success: false, message: "المحامي غير موجود" });
+    }
+
+    // Check if lawyer has a pending subscription request
+    const { data: pendingRequest, error: fetchError } = await supabase
+      .from("subscription_requests")
+      .select("id")
+      .eq("lawyer_id", lawyerId)
+      .eq("status", "pending")
+      .maybeSingle();
+
+    if (fetchError) throw Error(fetchError.message);
+
+    if (pendingRequest) return res.status(409).json({ success: false, message: "لديك طلب اشتراك معلق بالفعل" });
+
+    if (!invoice) return res.status(400).json({ success: false, message: "يجب إرفاق فاتورة أو إيصال الدفع" });
+
+    const fileId = crypto.randomBytes(16).toString("hex");
+    const fileExt = invoice.originalname.split(".").pop() || "jpg";
+    const fileBuffer = fs.readFileSync(invoice.path);
+
+    const { data: uploadedFile, error: uploadError } = await supabase.storage
+      .from("subscription_requests")
+      .upload(`${fileId}.${fileExt}`, fileBuffer, {
+        contentType: invoice.mimetype,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      logger.error(`[SUBSCRIPTION INVOICE UPLOAD] ${uploadError.message}`);
+      throw Error("خطأ أثناء تقديم الطلب");
+    }
+
+    const { error: insertError } = await supabase
+      .from("subscription_requests")
+      .insert({ lawyer_id: lawyerId, invoice_path: uploadedFile.path });
+
+    if (insertError) {
+      logger.error(`[SUBSCRIPTION REQUEST INSERT RECORD] ${insertError.message}`);
+      await supabase.storage.from("subscription_requests").remove([uploadedFile.path]);
+      throw Error("حدث خطأ أثناء إنشاء الطلب");
+    }
+
+    return res.status(201).json({ success: true, message: "تم إرسال طلب الاشتراك بنجاح" });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return res.status(500).json({
+      success: false,
+      message: message,
+    });
+  } finally {
+    if (invoice?.path && fs.existsSync(invoice.path)) {
+      try {
+        fs.unlinkSync(invoice.path);
+      } catch (cleanupErr) {
+        logger.error(`[TEMP FILE CLEANUP FAILED] ${cleanupErr}`);
+      }
+    }
+  }
+};
+
+export const sendSubcriptionRequest = sendSubscriptionRequest;
+
+export const getSubscriptionStatus = async (req: IAuthRequest, res: Response) => {
+  try {
+    const lawyerId = req.token?.lawyer_id;
+    if (!lawyerId) return res.status(401).json({ success: false, message: "unauthorized" });
+
+    const { data: pendingRequest, error: fetchError } = await supabase
+      .from("subscription_requests")
+      .select("id")
+      .eq("lawyer_id", lawyerId)
+      .eq("status", "pending")
+      .maybeSingle();
+
+    if (fetchError) throw Error(fetchError.message);
+
+    const { data: subscription, error: subError } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("lawyer_id", lawyerId)
+      .eq("status", "active")
+      .order("current_period_end", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (subError) throw Error(subError.message);
+
+    const isSubscribed = Boolean(
+      subscription && new Date(subscription.current_period_end) > new Date()
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        hasPendingRequest: Boolean(pendingRequest),
+        isSubscribed,
+        subscription: isSubscribed ? subscription : null,
+      },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return res.status(500).json({
+      success: false,
+      message,
+    });
+  }
+};
+
 
