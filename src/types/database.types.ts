@@ -516,6 +516,41 @@ export type Database = {
           },
         ]
       }
+      otps: {
+        Row: {
+          code: string
+          created_at: string | null
+          expires_at: string
+          id: number
+          is_used: boolean | null
+          lawyer_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          expires_at: string
+          id?: number
+          is_used?: boolean | null
+          lawyer_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: number
+          is_used?: boolean | null
+          lawyer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_otp_user"
+            columns: ["lawyer_id"]
+            isOneToOne: false
+            referencedRelation: "lawyers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_requests: {
         Row: {
           created_at: string | null
