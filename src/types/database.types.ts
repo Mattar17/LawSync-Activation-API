@@ -134,7 +134,7 @@ export type Database = {
           client_opponent_name: string
           client_opponent_national_id: string | null
           client_role: string
-          client_type: Database["public"]["Enums"]["client_type_enum"] | null
+          client_type: string | null
           closed_at: string | null
           court_circuit: string | null
           court_name: string | null
@@ -160,7 +160,7 @@ export type Database = {
           client_opponent_name: string
           client_opponent_national_id?: string | null
           client_role: string
-          client_type?: Database["public"]["Enums"]["client_type_enum"] | null
+          client_type?: string | null
           closed_at?: string | null
           court_circuit?: string | null
           court_name?: string | null
@@ -186,7 +186,7 @@ export type Database = {
           client_opponent_name?: string
           client_opponent_national_id?: string | null
           client_role?: string
-          client_type?: Database["public"]["Enums"]["client_type_enum"] | null
+          client_type?: string | null
           closed_at?: string | null
           court_circuit?: string | null
           court_name?: string | null

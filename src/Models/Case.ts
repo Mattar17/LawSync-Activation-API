@@ -76,9 +76,9 @@ export interface Case {
   client_national_id: string;
   client_opponent_national_id: string;
 
-  case_type?: CaseType;
+  case_type?: string;
   case_degree?: CaseDegree;
-  client_type?: ClientType;
+  client_type?: string;
 
   latest_court_session_date?: string;
   next_court_session_date?: string;

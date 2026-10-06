@@ -1,19 +1,6 @@
 import { z } from "zod";
 import { Database } from "../types/database.types.js";
 
-// Only client_type is an actual DB enum on the cases table
-type ClientTypeEnum = Database["public"]["Enums"]["client_type_enum"];
-
-const clientTypeValues: [ClientTypeEnum, ...ClientTypeEnum[]] = [
-  "فرد",
-  "شركة تضامن",
-  "شركة توصية بسيطة",
-  "شركة مساهمة",
-  "شركة ذات مسؤولية محدودة",
-  "شركة الشخص الواحد",
-  "جهة حكومية",
-  "أخرى",
-];
 
 export const createCaseSchema = z
   .object({
@@ -31,7 +18,7 @@ export const createCaseSchema = z
     assigned_lawyer_id: z.string().uuid().optional().nullable(),
     case_degree: z.string().optional().nullable(),
     case_type: z.string().optional().nullable(),
-    client_type: z.enum(clientTypeValues).optional().nullable(),
+    client_type: z.string().optional().nullable(),
     closed_at: z.string().optional().nullable(),
     court_circuit: z.string().optional().nullable(),
     court_name: z.string().optional().nullable(),
@@ -50,4 +37,3 @@ export const createCaseSchema = z
   })
   .strict();
 
-export { clientTypeValues };
